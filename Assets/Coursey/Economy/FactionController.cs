@@ -19,6 +19,10 @@ namespace Economy
             "OH GOD RUUUUUUN!!!!"
         };
 
+        public FactionController()
+        {
+            Initialize();
+        }
         public void Initialize()
         {
             AddDefaultFactions();

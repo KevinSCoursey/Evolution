@@ -16,15 +16,15 @@ namespace Economy
 
         public Faction(string factionName, string factionDescription, List<Faction> factionAllies, List<Faction> factionEnemies)
         {
-            this.factionName = factionName == string.Empty || factionName == null ? "Unnamed faction" : factionName;
+            this.factionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
             this.factionDescription = factionDescription == string.Empty || factionDescription == null ? "No faction description provided." : factionDescription;
             this.factionAllies = factionAllies;
             this.factionEnemies = factionEnemies;
         }
         public Faction(string factionName, string factionDescription)
         {
-            this.factionName = factionName == string.Empty || factionName == null ? "Unnamed faction" : factionName;
-            this.factionDescription = factionDescription == string.Empty || factionDescription == null ? "No faction description provided." : factionDescription;
+            this.factionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
+            this.factionDescription = string.IsNullOrEmpty(factionDescription) ? "No faction description provided." : factionDescription;
         }
         /// <summary>
         /// isFriend = true returns allies, false returns enemies

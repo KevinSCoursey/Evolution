@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Economy
 {
@@ -9,14 +10,14 @@ namespace Economy
         public string ItemName
         {
             get { return _ItemName; }
-            set { _ItemName = value == string.Empty || value == null ? _ItemName = "Unnamed item" : _ItemName = value; }
+            set { _ItemName = string.IsNullOrEmpty(value) ? _ItemName = "Unnamed item" : _ItemName = value; }
         }
         private string _ItemName = string.Empty;
 
         public string Description
         {
             get { return _ItemDescription; }
-            set { _ItemDescription = value == string.Empty || value == null ? "No description provided" : value; }
+            set { _ItemDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
         }
         private string _ItemDescription = string.Empty;
 
@@ -43,9 +44,7 @@ namespace Economy
             get { return _ActualPrice; }
             set
             {
-                if (value > PriceRoof) _ActualPrice = PriceRoof;
-                else if (value < PriceFloor) _ActualPrice = PriceFloor;
-                else _ActualPrice = value;
+                _ActualPrice = Mathf.Clamp(value, PriceFloor, PriceRoof);
             }
         }
         private int _ActualPrice = 1;
@@ -81,17 +80,9 @@ namespace Economy
 
         public string GetNamesOfFactionsThatSpecializeInThisItem()
         {
-            string returnString = string.Empty;
-            if (FactionsThatSpecializeInThisItem == null) return "None";
-            if (FactionsThatSpecializeInThisItem.Count > 0)
-            {
-                foreach (Faction faction in FactionsThatSpecializeInThisItem)
-                {
-                    returnString += $"{faction.factionName}\n";
-                }
-            }
-            else return "None";
-            return returnString;
+            return FactionsThatSpecializeInThisItem == null || FactionsThatSpecializeInThisItem.Count == 0
+                ? "None"
+                : string.Join("\n", FactionsThatSpecializeInThisItem.Select( x => x.factionName));
         }
         public void AddFactionSpecialization(Faction faction)
         {

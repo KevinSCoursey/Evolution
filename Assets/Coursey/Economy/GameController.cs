@@ -11,9 +11,7 @@ namespace Economy
         void Start()
         {
             factionController = new FactionController();
-            factionController.Initialize();
             economyController = new EconomyController(factionController.GetFactionList());
-            economyController.Initialize();
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
         }
     }

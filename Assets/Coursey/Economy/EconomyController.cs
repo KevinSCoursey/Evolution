@@ -13,6 +13,7 @@ namespace Economy
         {
             this.factions = factions;
             economyItemController = new EconomyItemController(factions);
+            Initialize();
         }
         public void Initialize()
         {
