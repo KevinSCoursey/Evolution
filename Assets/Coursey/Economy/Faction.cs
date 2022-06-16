@@ -5,11 +5,14 @@ namespace Economy
 {
     public class Faction
     {
+        private List<Faction> factions = new();
+
         public string factionName = string.Empty;
         public string factionDescription = string.Empty;
 
         public List<Faction> factionAllies = new();
         public List<Faction> factionEnemies = new();
+        public List<TradeStation> tradeStations = new();
 
         public Faction(string factionName, string factionDescription, List<Faction> factionAllies, List<Faction> factionEnemies)
         {
@@ -50,6 +53,16 @@ namespace Economy
                 returnString = "None";
             }
             return returnString;
+        }
+        public void UpdateListOfFactions(List<Faction> factions)
+        {
+            this.factions = factions;
+        }
+        public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
+        {
+            TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems);
+            tradeStations.Add(tradeStationToAdd);
+            Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
         }
         public override string ToString()
         {

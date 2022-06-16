@@ -36,10 +36,21 @@ namespace Economy
                 factions.Add(faction);
                 Debug.Log($"Added the following faction...\n\n{faction}");
             }
+            foreach(Faction faction in factions)
+            {
+                faction.UpdateListOfFactions(factions);
+            }
         }
         public List<Faction> GetFactionList()
         {
             return factions;
+        }
+        public void GenerateRandomTradeStations(List<EconomyItem> economyItems)
+        {
+            foreach (Faction faction in factions)
+            {
+                faction.GenerateRandomTradeStation(economyItems);
+            }
         }
     }
 }

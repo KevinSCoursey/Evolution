@@ -16,10 +16,10 @@ namespace Economy
 
         public void Initialize()
         {
-            foreach (Faction faction in factions)
+            /*foreach (Faction faction in factions)
             {
                 Debug.Log(faction.ToString());
-            }
+            }*/
             AddDefaultEconomyItems();
             LogAllEconomyItems();
         }
