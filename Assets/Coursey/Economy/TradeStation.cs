@@ -7,8 +7,8 @@ namespace Economy
     {
         private List<Faction> factions = new();
         private List<EconomyItem> economyItems = new();
-        private const float _purchasePriceMultiplier = 1.5f;
-        private const float _salePriceMultiplier = 1.25f;
+        private const float _purchasePriceMultiplier = 1.25f;
+        private const float _salePriceMultiplier = 0.75f;
 
         public string tradeStationName = string.Empty;
         public string tradeStationDescription = string.Empty;
@@ -44,26 +44,31 @@ namespace Economy
 
         public void CalculatePriceDistribution()
         {
-            int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 1, 20, true);//inventory volatility 3 - 13, just a weight factor
+            int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 1, 4, true);//inventory volatility 3 - 13, just a weight factor
             for (int i = 0; i < inventoryItems.Count; i++)
             {
                 if (inventoryItems[i].FactionsThatSpecializeInThisItem.Contains(associatedFaction))//if faction specializes, less interest in purchase from player
                 {
-                    inventoryItems[i].PurchasePrice = (int)(pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier);
-                    inventoryItems[i].SalePrice = (int)(pseudoRandomIntPairArray[i, 1] / inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier / 2);
+                    inventoryItems[i].PurchasePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier);
+                    inventoryItems[i].SalePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 1] * inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier * _salePriceMultiplier);
                 }
-                else
+                else//if faction specializes, more interest in purchase from player
                 {
-                    inventoryItems[i].PurchasePrice = (int)(pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier);
-                    inventoryItems[i].SalePrice = (int)(pseudoRandomIntPairArray[i, 1] / inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier);
+                    inventoryItems[i].PurchasePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier * _purchasePriceMultiplier);
+                    inventoryItems[i].SalePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 1] * inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier);
                 }
             }
+            /*foreach(IEconomyItem item in inventoryItems)
+            {
+                item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
+                item.SalePrice = MathTools.CalculateItemSalePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
+            }*/
         }
         public void CalculateItemDistribution()
         {
             foreach (IEconomyItem item in inventoryItems)
             {
-                item.QuantityOfItem = MathTools.PseudoRandomInt(0, 10000);//max currently 10000
+                item.QuantityOfItem = MathTools.PseudoRandomInt(0, item.MaxQuantityOfItem);//max currently 10000
             }
         }
 
@@ -76,7 +81,7 @@ namespace Economy
             }*/
             foreach (IEconomyItem item in inventoryItems)
             {
-                returnString += $"\n{item.ItemName} | Buy: ${item.PurchasePrice} | Sell: ${item.SalePrice} | Quantity: {item.QuantityOfItem}";
+                returnString += $"\n{item.ItemName} | Buy: ${item.PurchasePrice} / {item.PriceRoof} | Sell: ${item.SalePrice} / {item.PriceFloor} | Quantity: {item.QuantityOfItem} / {item.MaxQuantityOfItem}";
             }
             return returnString == string.Empty ? "None" : returnString;
         }

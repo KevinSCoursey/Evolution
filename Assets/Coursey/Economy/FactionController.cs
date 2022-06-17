@@ -6,7 +6,7 @@ namespace Economy
 {
     public class FactionController
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
 
 
         public List<Faction> factions = new();

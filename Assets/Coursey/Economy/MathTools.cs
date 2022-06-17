@@ -5,7 +5,7 @@ namespace Economy
 {
     public static class MathTools
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
 
 
         public static System.Random random;
@@ -19,6 +19,12 @@ namespace Economy
             Thread.Sleep(random.Next(1, random.Next(1,10)));//probably totally unnecessary
 
             return random.Next(min, max);
+        }
+        public static float PseudoRandomFloat(float min, float max)
+        {
+            Thread.Sleep(random.Next(1, random.Next(1, 10)));//probably totally unnecessary
+
+            return (float)(random.NextDouble() * (max - min) + min); ;
         }
         public static int[,] PseudoRandomIntPairArray(int height, int min, int max, bool firstNumberAlwaysLarger = false)
         {
@@ -40,14 +46,8 @@ namespace Economy
                     $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}]" : 
                     $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}], ");
                 */
-                if(y < height - 1)
-                {
-                    debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}], ";
-                }
-                else
-                {
-                    debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}]";
-                }
+                if(y < height - 1) debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}], ";
+                else debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}]";
 
             }
             //Just makes this not cause a compile warning
@@ -55,6 +55,31 @@ namespace Economy
             if (_debugThisClass) Debug.Log($"{ debugString}");
 #pragma warning restore CS0162 // Unreachable code detected
             return pseudoRandomIntPairArray;
+        }
+
+        public static int CalculateItemPurchasePrice(IEconomyItem economyItem, bool isSpecialized)
+        {
+            float volatility = PseudoRandomFloat(1, economyItem.PriceVolatilityFactor);
+            return isSpecialized ?
+
+                (int)(economyItem.PriceDefault + Math.Pow(economyItem.RarityInt, 1.5) * 
+                volatility * Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility) * 0.75f) :
+
+                (int)(economyItem.PriceDefault + Math.Pow(economyItem.RarityInt, 1.5) 
+                * volatility * Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility));
+            ;
+        }
+        public static int CalculateItemSalePrice(IEconomyItem economyItem, bool isSpecialized)
+        {
+            float volatility = PseudoRandomFloat(1, economyItem.PriceVolatilityFactor);
+            return isSpecialized ?
+
+                (int)(1.5f * economyItem.RarityInt * economyItem.PriceDefault - Math.Pow(economyItem.RarityInt, 1.5) *
+                volatility + Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility) * 1.25f) :
+
+                (int)(1.5f * economyItem.RarityInt * economyItem.PriceDefault - Math.Pow(economyItem.RarityInt, 1.5) *
+                volatility + Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility));
+            ;
         }
     }
 }

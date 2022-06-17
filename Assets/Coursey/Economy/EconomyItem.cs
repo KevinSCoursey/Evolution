@@ -35,7 +35,10 @@ namespace Economy
         public float PriceVolatilityFactor
         {
             get { return _PriceVolatilityFactor; }
-            set { _PriceVolatilityFactor = value; }
+            set
+            {
+                _PriceVolatilityFactor = Mathf.Clamp(value, 1f, 10f);
+            }
         }
         private float _PriceVolatilityFactor = 1.0f;
 
@@ -115,6 +118,15 @@ namespace Economy
             }
         }
         private int _QuantityOfItem = 1;
+        public int MaxQuantityOfItem
+        {
+            get { return _MaxQuantityOfItem; }
+            set
+            {
+                _MaxQuantityOfItem = Mathf.Clamp(value, 0, 2147483647);//2147483647
+            }
+        }
+        private int _MaxQuantityOfItem = 1;
 
         public string GetNamesOfFactionsThatSpecializeInThisItem()
         {
@@ -134,7 +146,7 @@ namespace Economy
                 $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a volatility factor of {PriceVolatilityFactor} and rarity of {RarityInt}. " +
                 $"Factions that specialize in this item: {GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
-        public EconomyItem(string name, string description, float priceVolatilityFactor, int purchasePrice, int salePrice, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt)
+        public EconomyItem(string name, string description, float priceVolatilityFactor, int purchasePrice, int salePrice, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
             ItemName = name;
             Description = description;
@@ -146,8 +158,9 @@ namespace Economy
             PriceFloor = priceFloor;
             PriceRoof = priceRoof;
             RarityInt = rarityInt;
+            MaxQuantityOfItem = maxQuantityOfItem;
         }
-        public EconomyItem(string name, string description, float priceVolatilityFactor, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt)
+        public EconomyItem(string name, string description, float priceVolatilityFactor, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
             ItemName = name;
             Description = description;
@@ -156,6 +169,8 @@ namespace Economy
             PriceDefault = priceDefault;
             PriceFloor = priceFloor;
             PriceRoof = priceRoof;
+            RarityInt = rarityInt;
+            MaxQuantityOfItem = maxQuantityOfItem;
         }
         public EconomyItem(EconomyItem economyItem)
         {
@@ -170,6 +185,7 @@ namespace Economy
             PurchasePrice= economyItem.PurchasePrice;
             RarityInt = economyItem.RarityInt;
             FactionsThatSpecializeInThisItem = economyItem.FactionsThatSpecializeInThisItem;
+            MaxQuantityOfItem = economyItem.MaxQuantityOfItem;
         }
     }
     public interface IEconomyItem
@@ -186,5 +202,6 @@ namespace Economy
         public int PriceRoof { get; set; }
         public int RarityInt { get; set; }
         public int QuantityOfItem { get; set; }
+        public int MaxQuantityOfItem { get; set; }
     }
 }

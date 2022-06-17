@@ -6,7 +6,7 @@ namespace Economy
 {
     public class EconomyItemController
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
 
         
         private List<Faction> factions;
@@ -38,7 +38,8 @@ namespace Economy
                 priceDefault: 5,
                 priceFloor: 1,
                 priceRoof: 10,
-                rarityInt: 3
+                rarityInt: 3,
+                maxQuantityOfItem: 100
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -50,7 +51,8 @@ namespace Economy
                 priceDefault: 50,
                 priceFloor: 10,
                 priceRoof: 100,
-                rarityInt: 7
+                rarityInt: 7,
+                maxQuantityOfItem: 100
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -62,7 +64,8 @@ namespace Economy
                 priceDefault: 3,
                 priceFloor: 1,
                 priceRoof: 15,
-                rarityInt: 4
+                rarityInt: 4,
+                maxQuantityOfItem: 100
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -74,7 +77,8 @@ namespace Economy
                 priceDefault: 6,
                 priceFloor: 1,
                 priceRoof: 18,
-                rarityInt: 5
+                rarityInt: 5,
+                maxQuantityOfItem: 100
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -86,7 +90,8 @@ namespace Economy
                 priceDefault: 2,
                 priceFloor: 1,
                 priceRoof: 5,
-                rarityInt: 1
+                rarityInt: 1,
+                maxQuantityOfItem: 100
                 );
             itemToAdd.AddFactionSpecialization(factions[1]); items.Add(itemToAdd);
 
