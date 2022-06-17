@@ -5,6 +5,9 @@ namespace Economy
 {
     public class Faction
     {
+        private const bool _debugThisClass = true;
+
+
         private List<Faction> factions = new();
 
         public string factionName = string.Empty;
@@ -61,12 +64,22 @@ namespace Economy
         public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
         {
             int rand = MathTools.PseudoRandomInt(1, 10);//random.Next(1, 10);
-            Debug.Log($"Adding {rand} Trade Station(s) to the {factionName} Faction...\n");
+
+            //Just makes this not cause a compile warning
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log($"Adding {rand} Trade Station(s) to the {factionName} Faction...\n");
+#pragma warning restore CS0162 // Unreachable code detected
+
             for (int i = 0; i < rand; i++)//In this case, 1 - 10 stations generated
             {
                 TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems);
                 tradeStations.Add(tradeStationToAdd);
-                Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
+
+                //Just makes this not cause a compile warning
+#pragma warning disable CS0162 // Unreachable code detected
+                if (_debugThisClass) Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
+#pragma warning restore CS0162 // Unreachable code detected
+
             }
         }
         public override string ToString()

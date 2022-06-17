@@ -5,9 +5,11 @@ namespace Economy
 {
     public static class MathTools
     {
-        public static System.Random random;
-        private const bool _debugThisClass = false;//true;
+        private const bool _debugThisClass = true;
 
+
+        public static System.Random random;
+        
         public static int PseudoRandomInt()
         {
             return random.Next();

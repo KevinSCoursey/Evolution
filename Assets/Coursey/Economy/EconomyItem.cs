@@ -96,6 +96,16 @@ namespace Economy
         }
         private int _PriceRoof = 1;
 
+        public int RarityInt
+        {
+            get { return _RarityInt; }
+            set
+            {
+                _RarityInt = (int)Mathf.Clamp(value, 0f, 10f);
+            }
+        }
+        private int _RarityInt = 0;
+
         public int QuantityOfItem
         {
             get { return _QuantityOfItem;  }
@@ -121,10 +131,10 @@ namespace Economy
             return
                 $"Item name: {ItemName}\n" +
                 $"Item description: {Description}\n" +
-                $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a volatility factor of {PriceVolatilityFactor}. " +
+                $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a volatility factor of {PriceVolatilityFactor} and rarity of {RarityInt}. " +
                 $"Factions that specialize in this item: {GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
-        public EconomyItem(string name, string description, float priceVolatilityFactor, int purchasePrice, int salePrice, int actualPrice, int priceDefault, int priceFloor, int priceRoof)
+        public EconomyItem(string name, string description, float priceVolatilityFactor, int purchasePrice, int salePrice, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt)
         {
             ItemName = name;
             Description = description;
@@ -135,8 +145,9 @@ namespace Economy
             PriceDefault = priceDefault;
             PriceFloor = priceFloor;
             PriceRoof = priceRoof;
+            RarityInt = rarityInt;
         }
-        public EconomyItem(string name, string description, float priceVolatilityFactor, int actualPrice, int priceDefault, int priceFloor, int priceRoof)
+        public EconomyItem(string name, string description, float priceVolatilityFactor, int actualPrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt)
         {
             ItemName = name;
             Description = description;
@@ -157,6 +168,7 @@ namespace Economy
             PriceFloor = economyItem.PriceFloor;
             PriceRoof = economyItem.PriceRoof;
             PurchasePrice= economyItem.PurchasePrice;
+            RarityInt = economyItem.RarityInt;
             FactionsThatSpecializeInThisItem = economyItem.FactionsThatSpecializeInThisItem;
         }
     }
@@ -172,6 +184,7 @@ namespace Economy
         public int PriceDefault { get; set; }
         public int PriceFloor { get; set; }
         public int PriceRoof { get; set; }
+        public int RarityInt { get; set; }
         public int QuantityOfItem { get; set; }
     }
 }

@@ -44,18 +44,16 @@ namespace Economy
 
         public void CalculatePriceDistribution()
         {
-            int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 3, 13, true);//inventory volatility 3 - 13
+            int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 1, 20, true);//inventory volatility 3 - 13, just a weight factor
             for (int i = 0; i < inventoryItems.Count; i++)
             {
                 if (inventoryItems[i].FactionsThatSpecializeInThisItem.Contains(associatedFaction))//if faction specializes, less interest in purchase from player
                 {
-                    //Debug.Log($"{inventoryItems[i].ItemName} is specialized by the {associatedFaction.factionName} Faction.");
                     inventoryItems[i].PurchasePrice = (int)(pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier);
                     inventoryItems[i].SalePrice = (int)(pseudoRandomIntPairArray[i, 1] / inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier / 2);
                 }
                 else
                 {
-                    //Debug.Log($"{inventoryItems[i].ItemName} isn't specialized by the {associatedFaction.factionName} Faction.");
                     inventoryItems[i].PurchasePrice = (int)(pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier);
                     inventoryItems[i].SalePrice = (int)(pseudoRandomIntPairArray[i, 1] / inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier);
                 }

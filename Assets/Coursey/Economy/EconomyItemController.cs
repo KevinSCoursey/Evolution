@@ -6,7 +6,11 @@ namespace Economy
 {
     public class EconomyItemController
     {
+        private const bool _debugThisClass = true;
+
+        
         private List<Faction> factions;
+
         public List<EconomyItem> items = new List<EconomyItem>();
 
         public EconomyItemController(List<Faction> factions)
@@ -17,7 +21,11 @@ namespace Economy
         public void Initialize()
         {
             AddDefaultEconomyItems();
-            LogAllEconomyItems();
+
+            //Just makes this not cause a compile warning
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) LogAllEconomyItems();
+#pragma warning restore CS0162 // Unreachable code detected
         }
         private void AddDefaultEconomyItems()
         {
@@ -29,7 +37,8 @@ namespace Economy
                 actualPrice: 5,
                 priceDefault: 5,
                 priceFloor: 1,
-                priceRoof: 10
+                priceRoof: 10,
+                rarityInt: 3
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -40,7 +49,8 @@ namespace Economy
                 actualPrice: 50,
                 priceDefault: 50,
                 priceFloor: 10,
-                priceRoof: 100
+                priceRoof: 100,
+                rarityInt: 7
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -51,7 +61,8 @@ namespace Economy
                 actualPrice: 3,
                 priceDefault: 3,
                 priceFloor: 1,
-                priceRoof: 15
+                priceRoof: 15,
+                rarityInt: 4
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -62,7 +73,8 @@ namespace Economy
                 actualPrice: 6,
                 priceDefault: 6,
                 priceFloor: 1,
-                priceRoof: 18
+                priceRoof: 18,
+                rarityInt: 5
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -73,7 +85,8 @@ namespace Economy
                 actualPrice: 2,
                 priceDefault: 2,
                 priceFloor: 1,
-                priceRoof: 5
+                priceRoof: 5,
+                rarityInt: 1
                 );
             itemToAdd.AddFactionSpecialization(factions[1]); items.Add(itemToAdd);
 

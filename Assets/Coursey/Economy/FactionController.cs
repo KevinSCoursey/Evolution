@@ -6,6 +6,9 @@ namespace Economy
 {
     public class FactionController
     {
+        private const bool _debugThisClass = true;
+
+
         public List<Faction> factions = new();
 
         private List<string> factionNames = new List<string>
@@ -37,7 +40,12 @@ namespace Economy
             {
                 Faction faction = new Faction(factionNames[i], factionDescriptions[i]);
                 factions.Add(faction);
-                Debug.Log($"Added the following faction...\n\n{faction}");
+
+                //Just makes this not cause a compile warning
+#pragma warning disable CS0162 // Unreachable code detected
+                if (_debugThisClass) Debug.Log($"Added the following faction...\n\n{faction}");
+#pragma warning restore CS0162 // Unreachable code detected
+
             }
             foreach(Faction faction in factions)
             {
