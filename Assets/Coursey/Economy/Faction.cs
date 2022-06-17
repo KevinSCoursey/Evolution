@@ -58,11 +58,16 @@ namespace Economy
         {
             this.factions = factions;
         }
-        public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
+        public void GenerateRandomTradeStation(List<EconomyItem> economyItems, System.Random random)
         {
-            TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems);
-            tradeStations.Add(tradeStationToAdd);
-            Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
+            int rand = random.Next(1, 10);
+            Debug.Log($"Adding {rand} Trade Station(s) to the {factionName} Faction...\n");
+            for (int i = 0; i < rand; i++)//In this case, 1 - 10 stations generated
+            {
+                TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems, random);
+                tradeStations.Add(tradeStationToAdd);
+                Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
+            }
         }
         public override string ToString()
         {

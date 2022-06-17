@@ -39,6 +39,24 @@ namespace Economy
         }
         private float _PriceVolatilityFactor = 1.0f;
 
+        public int PurchasePrice
+        {
+            get { return _PurchasePrice; }
+            set
+            {
+                _PurchasePrice = Mathf.Clamp(value, PriceFloor, PriceRoof);
+            }
+        }
+        private int _PurchasePrice = 1;
+        public int SalePrice
+        {
+            get { return _SalePrice; }
+            set
+            {
+                _SalePrice = Mathf.Clamp(value, PriceFloor, PriceRoof);
+            }
+        }
+        private int _SalePrice = 1;
         public int ActualPrice
         {
             get { return _ActualPrice; }
@@ -78,6 +96,16 @@ namespace Economy
         }
         private int _PriceRoof = 1;
 
+        public int QuantityOfItem
+        {
+            get { return _QuantityOfItem;  }
+            set
+            {
+                _QuantityOfItem = Mathf.Clamp(value, 0, 2147483647);//2147483647
+            }
+        }
+        private int _QuantityOfItem = 1;
+
         public string GetNamesOfFactionsThatSpecializeInThisItem()
         {
             return FactionsThatSpecializeInThisItem == null || FactionsThatSpecializeInThisItem.Count == 0
@@ -96,6 +124,18 @@ namespace Economy
                 $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a volatility factor of {PriceVolatilityFactor}. " +
                 $"Factions that specialize in this item: {GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
+        public EconomyItem(string name, string description, float priceVolatilityFactor, int purchasePrice, int salePrice, int actualPrice, int priceDefault, int priceFloor, int priceRoof)
+        {
+            ItemName = name;
+            Description = description;
+            PriceVolatilityFactor = priceVolatilityFactor;
+            PurchasePrice = purchasePrice;
+            SalePrice = salePrice;
+            ActualPrice = actualPrice;
+            PriceDefault = priceDefault;
+            PriceFloor = priceFloor;
+            PriceRoof = priceRoof;
+        }
         public EconomyItem(string name, string description, float priceVolatilityFactor, int actualPrice, int priceDefault, int priceFloor, int priceRoof)
         {
             ItemName = name;
@@ -106,6 +146,18 @@ namespace Economy
             PriceFloor = priceFloor;
             PriceRoof = priceRoof;
         }
+        public EconomyItem(EconomyItem economyItem)
+        {
+            ItemName = economyItem.ItemName;
+            Description = economyItem.Description;
+            PriceVolatilityFactor = economyItem.PriceVolatilityFactor;
+            SalePrice = economyItem.SalePrice;
+            ActualPrice = economyItem.ActualPrice;
+            PriceDefault = economyItem.PriceDefault;
+            PriceFloor = economyItem.PriceFloor;
+            PriceRoof = economyItem.PriceRoof;
+            PurchasePrice= economyItem.PurchasePrice;
+        }
     }
     public interface IEconomyItem
     {
@@ -113,9 +165,12 @@ namespace Economy
         public string Description { get; set; }
         public List<Faction> FactionsThatSpecializeInThisItem { get; set; }
         public float PriceVolatilityFactor { get; set; }
+        public int PurchasePrice { get; set; }
+        public int SalePrice { get; set; }
         public int ActualPrice { get; set; }
         public int PriceDefault { get; set; }
         public int PriceFloor { get; set; }
         public int PriceRoof { get; set; }
+        public int QuantityOfItem { get; set; }
     }
 }

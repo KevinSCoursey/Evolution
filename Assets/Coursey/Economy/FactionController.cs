@@ -7,6 +7,7 @@ namespace Economy
     public class FactionController
     {
         public List<Faction> factions = new();
+        private System.Random random;
 
         private List<string> factionNames = new List<string>
         { 
@@ -19,8 +20,9 @@ namespace Economy
             "OH GOD RUUUUUUN!!!!"
         };
 
-        public FactionController()
+        public FactionController(System.Random random)
         {
+            this.random = random;
             Initialize();
         }
         public void Initialize()
@@ -53,7 +55,7 @@ namespace Economy
         {
             foreach (Faction faction in factions)
             {
-                faction.GenerateRandomTradeStation(economyItems);
+                faction.GenerateRandomTradeStation(economyItems, random);
             }
         }
     }
