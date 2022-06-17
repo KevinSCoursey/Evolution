@@ -157,6 +157,7 @@ namespace Economy
             PriceFloor = economyItem.PriceFloor;
             PriceRoof = economyItem.PriceRoof;
             PurchasePrice= economyItem.PurchasePrice;
+            FactionsThatSpecializeInThisItem = economyItem.FactionsThatSpecializeInThisItem;
         }
     }
     public interface IEconomyItem

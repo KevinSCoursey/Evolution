@@ -21,7 +21,6 @@ namespace Economy
         }
         private void AddDefaultEconomyItems()
         {
-            //Debug.Log($"Adding default economy items...\n");
             //DEFAULT ITEMS
             EconomyItem itemToAdd = new EconomyItem(
                 name: "Iron Ore",

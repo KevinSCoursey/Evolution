@@ -10,11 +10,11 @@ namespace Economy
         public readonly static int seed = 8675309;
         public FactionController factionController;
         public EconomyController economyController;
-        public System.Random random = new(seed);
         void Start()
         {
+            MathTools.random = new(seed);
             Debug.Log($"Seed: {seed}");
-            factionController = new FactionController(random);
+            factionController = new FactionController();
             economyController = new EconomyController(factionController.GetFactionList());
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
         }
