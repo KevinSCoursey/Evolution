@@ -59,27 +59,49 @@ namespace Economy
 
         public static int CalculateItemPurchasePrice(IEconomyItem economyItem, bool isSpecialized)
         {
-            float volatility = PseudoRandomFloat(1, economyItem.PriceVolatilityFactor);
-            return isSpecialized ?
+            float markupFactor = 1.25f;
+            int price = isSpecialized ?
 
-                (int)(economyItem.PriceDefault + Math.Pow(economyItem.RarityInt, 1.5) * 
-                volatility * Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility) * 0.75f) :
+                //(int)( - 2f * markupFactor * economyItem.QuantityOfItem / economyItem.MaxQuantityOfItem * Mathf.Pow(economyItem.QuantityOfItem, 1 / (economyItem.RarityInt + 1)) + economyItem.PriceDefault)
+                (int)(markupFactor * (economyItem.PriceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
 
-                (int)(economyItem.PriceDefault + Math.Pow(economyItem.RarityInt, 1.5) 
-                * volatility * Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility));
-            ;
+                :
+
+                (int)(markupFactor * (economyItem.PriceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
+
+            return price;
         }
         public static int CalculateItemSalePrice(IEconomyItem economyItem, bool isSpecialized)
         {
-            float volatility = PseudoRandomFloat(1, economyItem.PriceVolatilityFactor);
-            return isSpecialized ?
+            float markdownFactor = 0.75f;
+            int price = isSpecialized ? (int)(markdownFactor * (economyItem.PriceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
 
-                (int)(1.5f * economyItem.RarityInt * economyItem.PriceDefault - Math.Pow(economyItem.RarityInt, 1.5) *
-                volatility + Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility) * 1.25f) :
+                :
 
-                (int)(1.5f * economyItem.RarityInt * economyItem.PriceDefault - Math.Pow(economyItem.RarityInt, 1.5) *
-                volatility + Math.Pow(economyItem.MaxQuantityOfItem / economyItem.QuantityOfItem, volatility));
-            ;
+                (int)(markdownFactor * (economyItem.PriceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
+
+            while(price >= economyItem.PurchasePrice)
+            {
+                price = (int)(price * 0.75);
+            }
+
+            return price;
+        }
+        public static float CalculateDistanceBetweenPoints(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            return Mathf.Sqrt(Mathf.Pow(x2 - x1, 2) + Mathf.Pow(y2 - y1, 2) + Mathf.Pow(z2 - z1, 2));
+        }
+        public static float CalculateDistanceBetweenPoints(float x1, float y1, float x2, float y2)
+        {
+            return Mathf.Sqrt(Mathf.Pow(x2 - x1, 2) + Mathf.Pow(y2 - y1, 2));
         }
     }
 }

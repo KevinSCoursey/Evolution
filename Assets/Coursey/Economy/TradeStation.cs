@@ -44,7 +44,7 @@ namespace Economy
 
         public void CalculatePriceDistribution()
         {
-            int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 1, 4, true);//inventory volatility 3 - 13, just a weight factor
+            /*int[,] pseudoRandomIntPairArray = MathTools.PseudoRandomIntPairArray(inventoryItems.Count, 1, 4, true);//inventory volatility 3 - 13, just a weight factor
             for (int i = 0; i < inventoryItems.Count; i++)
             {
                 if (inventoryItems[i].FactionsThatSpecializeInThisItem.Contains(associatedFaction))//if faction specializes, less interest in purchase from player
@@ -57,12 +57,12 @@ namespace Economy
                     inventoryItems[i].PurchasePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 0] * inventoryItems[i].PriceVolatilityFactor * _purchasePriceMultiplier * _purchasePriceMultiplier);
                     inventoryItems[i].SalePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 1] * inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier);
                 }
-            }
-            /*foreach(IEconomyItem item in inventoryItems)
+            }*/
+            foreach(IEconomyItem item in inventoryItems)
             {
                 item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
                 item.SalePrice = MathTools.CalculateItemSalePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
-            }*/
+            }
         }
         public void CalculateItemDistribution()
         {
