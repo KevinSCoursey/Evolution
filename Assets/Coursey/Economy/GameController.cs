@@ -10,7 +10,7 @@ namespace Economy
         private const bool _debugThisClass = true;
 
 
-        public readonly static int seed = 8675309;
+        public static int seed = 8675309;
         public FactionController factionController;
         public EconomyController economyController;
         void Start()
@@ -25,6 +25,8 @@ namespace Economy
             factionController = new FactionController();
             economyController = new EconomyController(factionController.GetFactionList());
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
+
+            economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
         }
     }
 }

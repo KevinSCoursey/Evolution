@@ -60,16 +60,13 @@ namespace Economy
         public static int CalculateItemPurchasePrice(IEconomyItem economyItem, bool isSpecialized)
         {
             float markupFactor = 1.25f;
-            int price = isSpecialized ?
+            int price = isSpecialized
 
-                //(int)( - 2f * markupFactor * economyItem.QuantityOfItem / economyItem.MaxQuantityOfItem * Mathf.Pow(economyItem.QuantityOfItem, 1 / (economyItem.RarityInt + 1)) + economyItem.PriceDefault)
-                (int)(markupFactor * (economyItem.PriceDefault +
+                ? (int)(markupFactor * (economyItem.PriceDefault +
                 80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
                 (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
 
-                :
-
-                (int)(markupFactor * (economyItem.PriceDefault +
+                : (int)(markupFactor * (economyItem.PriceDefault +
                 80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
                 (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
 
@@ -78,13 +75,13 @@ namespace Economy
         public static int CalculateItemSalePrice(IEconomyItem economyItem, bool isSpecialized)
         {
             float markdownFactor = 0.75f;
-            int price = isSpecialized ? (int)(markdownFactor * (economyItem.PriceDefault +
+            int price = isSpecialized
+
+                ? (int)(markdownFactor * (economyItem.PriceDefault +
                 80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
                 (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
 
-                :
-
-                (int)(markdownFactor * (economyItem.PriceDefault +
+                : (int)(markdownFactor * (economyItem.PriceDefault +
                 80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
                 (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
 

@@ -109,6 +109,13 @@ namespace Economy
         }
         private int _MaxQuantityOfItem = 1;
 
+        public ItemClass ClassOfItem
+        {
+            get { return _ClassOfItem; }
+            set { _ClassOfItem = value; }
+        }
+        private ItemClass _ClassOfItem = ItemClass.Unknown;
+
         public string GetNamesOfFactionsThatSpecializeInThisItem()
         {
             return FactionsThatSpecializeInThisItem == null || FactionsThatSpecializeInThisItem.Count == 0
@@ -122,13 +129,14 @@ namespace Economy
         public override string ToString()
         {
             return
-                $"Item name: {ItemName}\n" +
+                $"Item name: {ItemName} ({ClassOfItem})\n" +
                 $"Item description: {Description}\n" +
                 $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a rarity of {RarityInt}. " +
-                $"Factions that specialize in this item: {GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
+                $"Factions that specialize in this item: \n{GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
-        public EconomyItem(string name, string description, int purchasePrice, int salePrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
+        public EconomyItem(ItemClass classOfItem, string name, string description, int purchasePrice, int salePrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
+            ClassOfItem = classOfItem;
             ItemName = name;
             Description = description;
             PurchasePrice = purchasePrice;
@@ -139,8 +147,9 @@ namespace Economy
             RarityInt = rarityInt;
             MaxQuantityOfItem = maxQuantityOfItem;
         }
-        public EconomyItem(string name, string description, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
+        public EconomyItem(ItemClass classOfItem, string name, string description, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
+            ClassOfItem = classOfItem;
             ItemName = name;
             Description = description;
             PriceDefault = priceDefault;
@@ -151,6 +160,7 @@ namespace Economy
         }
         public EconomyItem(EconomyItem economyItem)
         {
+            ClassOfItem = economyItem.ClassOfItem;
             ItemName = economyItem.ItemName;
             Description = economyItem.Description;
             SalePrice = economyItem.SalePrice;
@@ -176,5 +186,11 @@ namespace Economy
         public int RarityInt { get; set; }
         public int QuantityOfItem { get; set; }
         public int MaxQuantityOfItem { get; set; }
+        public ItemClass ClassOfItem { get; set; }
+    }
+
+    public enum ItemClass
+    {
+        None, Unknown, Generic, Military, Produce, Construction, Ship
     }
 }

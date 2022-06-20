@@ -63,5 +63,9 @@ namespace Economy
                 faction.GenerateRandomTradeStation(economyItems);
             }
         }
+        public Faction GetRandomFaction()
+        {
+            return factions[MathTools.PseudoRandomInt(0, factions.Count)];
+        }
     }
 }

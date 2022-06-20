@@ -6,7 +6,7 @@ namespace Economy
 {
     public class EconomyItemController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
 
         
         private List<Faction> factions;
@@ -33,6 +33,7 @@ namespace Economy
             EconomyItem itemToAdd = new EconomyItem(
                 name: "Iron Ore",
                 description: "A rock mostly comprised of Fe-26",
+                classOfItem: ItemClass.Generic,
                 priceDefault: 500,
                 priceFloor: 100,
                 priceRoof: 1000,
@@ -44,6 +45,7 @@ namespace Economy
             itemToAdd = new EconomyItem(
                 name: "Gold Ore",
                 description: "A rock mostly comprised of Ag-47",
+                classOfItem: ItemClass.Generic,
                 priceDefault: 5000,
                 priceFloor: 1000,
                 priceRoof: 10000,
@@ -55,6 +57,7 @@ namespace Economy
             itemToAdd = new EconomyItem(
                 name: "Copper Ore",
                 description: "A rock mostly comprised of Cu-29",
+                classOfItem: ItemClass.Generic,
                 priceDefault: 300,
                 priceFloor: 100,
                 priceRoof: 1500,
@@ -66,6 +69,7 @@ namespace Economy
             itemToAdd = new EconomyItem(
                 name: "Nickel Ore",
                 description: "A rock mostly comprised of Ni-28",
+                classOfItem: ItemClass.Generic,
                 priceDefault: 600,
                 priceFloor: 100,
                 priceRoof: 1800,
@@ -77,6 +81,7 @@ namespace Economy
             itemToAdd = new EconomyItem(
                 name: "Deluxe Canned Space-Bugs (Spicy)",
                 description: "Goes well with a side of Tums!",
+                classOfItem: ItemClass.Generic,
                 priceDefault: 200,
                 priceFloor: 100,
                 priceRoof: 500,
