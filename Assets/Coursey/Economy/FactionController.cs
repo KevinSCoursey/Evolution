@@ -12,7 +12,8 @@ namespace Economy
         public List<Faction> factions = new();
 
         private List<string> factionNames = new List<string>
-        { 
+        {
+            //DEFAULT FACTIONS
             "Humans",
             "The Zerg"
         };

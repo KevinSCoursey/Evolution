@@ -15,8 +15,14 @@ namespace Economy
         public EconomyController economyController;
         void Start()
         {
-            MathTools.random = new(seed);
-            
+            MathTools.Initialize(seed);
+            NameRandomizer.Initialize();
+
+            /*for (int i = 0; i < 100; i++)
+            {
+                Debug.Log(NameRandomizer.GenerateUniqueNamev2(NameType.Faction));
+            }*/
+
             //Just makes this not cause a compile warning
 #pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass) Debug.Log($"Seed: {seed}");
@@ -27,6 +33,7 @@ namespace Economy
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
 
             economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
+            economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction(), true);
         }
     }
 }

@@ -10,6 +10,11 @@ namespace Economy
 
         public static System.Random random;
         
+        public static void Initialize(int seed)
+        {
+            random = new System.Random(seed);
+        }
+
         public static int PseudoRandomInt()
         {
             return random.Next();
@@ -18,13 +23,13 @@ namespace Economy
         {
             Thread.Sleep(random.Next(1, random.Next(1,10)));//probably totally unnecessary
 
-            return random.Next(min, max);
+            return min >= max ? min : random.Next(min, max);
         }
         public static float PseudoRandomFloat(float min, float max)
         {
             Thread.Sleep(random.Next(1, random.Next(1, 10)));//probably totally unnecessary
 
-            return (float)(random.NextDouble() * (max - min) + min); ;
+            return min >= max ? min : (float)(random.NextDouble() * (max - min) + min);
         }
         public static int[,] PseudoRandomIntPairArray(int height, int min, int max, bool firstNumberAlwaysLarger = false)
         {

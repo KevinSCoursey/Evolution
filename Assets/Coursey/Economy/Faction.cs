@@ -72,7 +72,7 @@ namespace Economy
 
             for (int i = 0; i < rand; i++)//In this case, 1 - 10 stations generated
             {
-                TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems);
+                TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems, tradeStationName: NameRandomizer.GenerateUniqueNamev2());
                 tradeStations.Add(tradeStationToAdd);
 
                 //Just makes this not cause a compile warning
