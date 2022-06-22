@@ -51,7 +51,7 @@ namespace Economy
             {
                 if (tickCounter >= GameSettings.TicksPerSecond)
                 {
-                    GameTime.seconds++;
+                    GameTime.Seconds++;
                     tickCounter = 0;
                 }
                 else
@@ -60,6 +60,12 @@ namespace Economy
                 }
 
                 economyController.economyEventController.GameLoop();
+                factionController.GameLoop();
+
+                if(GameTime.Minutes == 1)
+                {
+                    gameRunning = false;
+                }
 
                 yield return new WaitForSeconds(1 / GameSettings.TicksPerSecond);
             }

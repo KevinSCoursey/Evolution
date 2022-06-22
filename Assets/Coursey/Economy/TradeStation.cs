@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Economy
 {
@@ -7,8 +6,6 @@ namespace Economy
     {
         private List<Faction> factions = new();
         private List<EconomyItem> economyItems = new();
-        private const float _purchasePriceMultiplier = 1.25f;
-        private const float _salePriceMultiplier = 0.75f;
 
         public string tradeStationName = string.Empty;
         public string tradeStationDescription = string.Empty;
@@ -38,7 +35,9 @@ namespace Economy
             {
                 if (economyItem.FactionsThatSpecializeInThisItem.Contains(associatedFaction))
                 {
-                    inventoryItems.Add(new EconomyItem(economyItem));
+                    EconomyItem economyItemToAdd = new EconomyItem(economyItem);
+                    specializedItems.Add(economyItemToAdd);
+                    inventoryItems.Add(economyItemToAdd);
                 }
             }
         }
@@ -59,7 +58,7 @@ namespace Economy
                     inventoryItems[i].SalePrice = (int)(inventoryItems[i].PriceDefault * pseudoRandomIntPairArray[i, 1] * inventoryItems[i].PriceVolatilityFactor * _salePriceMultiplier);
                 }
             }*/
-            foreach(IEconomyItem item in inventoryItems)
+            foreach (IEconomyItem item in inventoryItems)
             {
                 item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
                 item.SalePrice = MathTools.CalculateItemSalePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
@@ -72,7 +71,39 @@ namespace Economy
                 item.QuantityOfItem = MathTools.PseudoRandomInt(0, item.MaxQuantityOfItem);//max currently 10000
             }
         }
-
+        public void ProduceItems()
+        {
+            foreach (IEconomyItem item in specializedItems)
+            {
+                float factor = 1f;
+                foreach (EconomyEvent eEvent in economyEvents)
+                {
+                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.ClassOfItem) && eEvent.itemEffectFactor > 1)
+                    {
+                        factor *= eEvent.itemEffectFactor;
+                    }
+                }
+                item.QuantityOfItem = (int)(factor *
+                    (item.QuantityOfItem + GameSettings.AverageEconomyItemsProducedPerTick + MathTools.PseudoRandomInt(1, 5 * item.RarityInt)));
+            }
+        }
+        public void UseItems()
+        {
+            foreach (IEconomyItem item in specializedItems)
+            {
+                float factor = 1f;
+                foreach (EconomyEvent eEvent in economyEvents)
+                {
+                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.ClassOfItem) && eEvent.itemEffectFactor < 1)
+                    {
+                        factor *= eEvent.itemEffectFactor;
+                    }
+                }
+                item.QuantityOfItem = (int)(factor *
+                    (item.QuantityOfItem - GameSettings.AverageEconomyItemsProducedPerTick -
+                    MathTools.PseudoRandomInt(1 * item.RarityInt, 5 * item.RarityInt)));
+            }
+        }
         public string LogItemsAvailable()
         {
             string returnString = string.Empty;

@@ -6,7 +6,7 @@ namespace Economy
 {
     public class FactionController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
 
 
         public List<Faction> factions = new();
@@ -29,6 +29,22 @@ namespace Economy
         public void Initialize()
         {
             AddDefaultFactions();
+        }
+
+        public void GameLoop()
+        {
+            foreach(Faction faction in factions)
+            {
+                foreach(TradeStation tradeStation in faction.tradeStations)
+                {
+                    tradeStation.UseItems();
+                    tradeStation.ProduceItems();
+                    tradeStation.CalculatePriceDistribution();
+#pragma warning disable CS0162 // Unreachable code detected
+                    if (_debugThisClass) Debug.Log($"{tradeStation}");
+#pragma warning restore CS0162 // Unreachable code detected
+                }
+            }
         }
 
         private void AddDefaultFactions()

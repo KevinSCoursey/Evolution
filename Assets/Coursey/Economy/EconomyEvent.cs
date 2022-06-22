@@ -8,6 +8,7 @@ namespace Economy
     {
         private const bool _debugThisClass = true;
 
+        public float itemEffectFactor = 1f;
         public List<Faction> factionsEffected = new();
         public string EventName
         {
@@ -52,11 +53,12 @@ namespace Economy
             EventName = name;
             Description = description;
         }
-        public EconomyEvent(string name, string description, List<ItemClass> itemClassesImpactedByEvent)
+        public EconomyEvent(string name, string description, List<ItemClass> itemClassesImpactedByEvent, float factor)
         {
             EventName = name;
             Description = description;
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
+            this.itemEffectFactor = factor;
         }
 
         public int TriggerEvent(Faction faction)
@@ -68,21 +70,23 @@ namespace Economy
                 factionsEffected.Add(faction);
                 foreach(TradeStation tradeStation in faction.tradeStations)
                 {
-                    if (!tradeStation.economyEvents.Contains(this))
+                    if (!tradeStation.economyEvents.Any(_ => _.EventName == EventName))
+                    //if (!tradeStation.economyEvents.Contains(this))
                     {
                         tradeStation.economyEvents.Add(this);
                         numTriggered++;
+#pragma warning disable CS0162 // Unreachable code detected
+                        if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on Faction {faction.factionName}!");
+#pragma warning restore CS0162 // Unreachable code detected
                     }
                 }
-#pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on Faction {faction.factionName}!");
-#pragma warning restore CS0162 // Unreachable code detected
             }
             return numTriggered;
         }
         public int TriggerEvent(TradeStation tradeStation)
         {
-            if (!tradeStation.economyEvents.Contains(this))
+            if (!tradeStation.economyEvents.Any(_ => _.EventName == EventName))
+            //if (!tradeStation.economyEvents.Contains(this))
             {
                 //do something
                 tradeStation.economyEvents.Add(this);

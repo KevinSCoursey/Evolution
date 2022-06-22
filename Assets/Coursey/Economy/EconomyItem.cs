@@ -85,7 +85,7 @@ namespace Economy
             get { return _RarityInt; }
             set
             {
-                _RarityInt = (int)Mathf.Clamp(value, 0f, 10f);
+                _RarityInt = (int)Mathf.Clamp(value, 1f, 10f);
             }
         }
         private int _RarityInt = 0;
@@ -95,7 +95,7 @@ namespace Economy
             get { return _QuantityOfItem;  }
             set
             {
-                _QuantityOfItem = Mathf.Clamp(value, 0, 2147483647);//2147483647
+                _QuantityOfItem = Mathf.Clamp(value, 0, MaxQuantityOfItem);
             }
         }
         private int _QuantityOfItem = 1;
@@ -191,6 +191,6 @@ namespace Economy
 
     public enum ItemClass
     {
-        None, Unknown, Generic, Military, Produce, Construction, Ship
+        None, Unknown, Generic, Military, Medical, Produce, Construction, Ship
     }
 }

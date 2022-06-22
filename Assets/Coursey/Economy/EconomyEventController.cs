@@ -73,47 +73,52 @@ namespace Economy
         }
         private bool ShouldEventBeRemoved()
         {
-            if (MathTools.PseudoRandomInt(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000))
+            if (MathTools.PseudoRandomInt(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000) * ConcurrentEvents)
             {
                 return true;
             }
             return false;
         }
-        public void AddDefaultEconomyEvents()
+        public void AddDefaultEconomyEvents()//-------------------------DEFAULT EVENTS
         {
             //DEFAULT EVENTS
             EconomyEvent eventToAdd = new EconomyEvent(
                 name: "Pandemic",
                 description: "Something, something, 6 feet and masks.",
-                itemClassesImpactedByEvent: new () { ItemClass.None }
+                itemClassesImpactedByEvent: new() { ItemClass.Medical },
+                factor: 0.55f
                 );
             economyEvents.Add(eventToAdd);
 
             eventToAdd = new EconomyEvent(
                 name: "Civil War",
-                description: "Increased demand and use of mulitary equipment.",
-                itemClassesImpactedByEvent: new() { ItemClass.Military }
+                description: "Internal conflict within the Faction! Increased demand and use of mulitary equipment.",
+                itemClassesImpactedByEvent: new() { ItemClass.Military },
+                factor: 0.85f
                 );
             economyEvents.Add(eventToAdd);
 
             eventToAdd = new EconomyEvent(
                 name: "Faction War",
-                description: "Significantly increased demand and use of military equipment.",
-                itemClassesImpactedByEvent: new() { ItemClass.Military, ItemClass.Ship }
+                description: "Direct conflict with another Faction! Significantly increased demand and use of military equipment.",
+                itemClassesImpactedByEvent: new() { ItemClass.Military, ItemClass.Ship },
+                factor: 0.65f
                 );
             economyEvents.Add(eventToAdd);
 
             eventToAdd = new EconomyEvent(
                 name: "Economic Boom",
                 description: "Improved production!",
-                itemClassesImpactedByEvent: new() { ItemClass.Military, ItemClass.Construction, ItemClass.Ship, ItemClass.Produce, ItemClass.Generic }
+                itemClassesImpactedByEvent: new() { ItemClass.Military, ItemClass.Construction, ItemClass.Ship, ItemClass.Produce, ItemClass.Generic },
+                factor: 1.15f
                 );
             economyEvents.Add(eventToAdd);
 
             eventToAdd = new EconomyEvent(
                 name: "Planetary Enviromental Disaster",
                 description: "Significantly reduced production.",
-                itemClassesImpactedByEvent: new() { ItemClass.Generic, ItemClass.Military, ItemClass.Construction, ItemClass.Ship, ItemClass.Produce }
+                itemClassesImpactedByEvent: new() { ItemClass.Generic, ItemClass.Military, ItemClass.Construction, ItemClass.Ship, ItemClass.Produce },
+                factor: 0.45f
                 );
             economyEvents.Add(eventToAdd);
         }

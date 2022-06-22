@@ -38,7 +38,7 @@ namespace Economy
                 priceFloor: 100,
                 priceRoof: 1000,
                 rarityInt: 3,
-                maxQuantityOfItem: 1000
+                maxQuantityOfItem: 10000
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -50,7 +50,7 @@ namespace Economy
                 priceFloor: 1000,
                 priceRoof: 10000,
                 rarityInt: 7,
-                maxQuantityOfItem: 1000
+                maxQuantityOfItem: 10000
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -62,7 +62,7 @@ namespace Economy
                 priceFloor: 100,
                 priceRoof: 1500,
                 rarityInt: 4,
-                maxQuantityOfItem: 1000
+                maxQuantityOfItem: 10000
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -74,7 +74,7 @@ namespace Economy
                 priceFloor: 100,
                 priceRoof: 1800,
                 rarityInt: 5,
-                maxQuantityOfItem: 1000
+                maxQuantityOfItem: 10000
                 );
             itemToAdd.AddFactionSpecialization(factions[0]); items.Add(itemToAdd);
 
@@ -86,7 +86,7 @@ namespace Economy
                 priceFloor: 100,
                 priceRoof: 500,
                 rarityInt: 1,
-                maxQuantityOfItem: 1000
+                maxQuantityOfItem: 10000
                 );
             itemToAdd.AddFactionSpecialization(factions[1]); items.Add(itemToAdd);
 
