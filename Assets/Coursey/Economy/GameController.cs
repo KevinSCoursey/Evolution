@@ -8,7 +8,9 @@ namespace Economy
     public class GameController : MonoBehaviour
     {
         private const bool _debugThisClass = true;
-
+        private bool gameLoaded = false;
+        public bool gameRunning = true;
+        public int tickCounter = 0;
 
         public static int seed = 8675309;
         public FactionController factionController;
@@ -29,11 +31,38 @@ namespace Economy
 #pragma warning restore CS0162 // Unreachable code detected
 
             factionController = new FactionController();
-            economyController = new EconomyController(factionController.GetFactionList());
+            economyController = new EconomyController(factionController);
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
 
-            economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
-            economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction(), true);
+            //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
+            //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction(), true);
+            gameLoaded = true;
+            StartCoroutine(GameLoop());
+        }
+
+        public void StopGame()
+        {
+            gameLoaded = false;
+        }
+
+        IEnumerator GameLoop()
+        {
+            while (gameRunning && gameLoaded)
+            {
+                if (tickCounter >= GameSettings.TicksPerSecond)
+                {
+                    GameTime.seconds++;
+                    tickCounter = 0;
+                }
+                else
+                {
+                    tickCounter++;
+                }
+
+                economyController.economyEventController.GameLoop();
+
+                yield return new WaitForSeconds(1 / GameSettings.TicksPerSecond);
+            }
         }
     }
 }

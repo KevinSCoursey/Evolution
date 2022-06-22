@@ -7,6 +7,8 @@ namespace Economy
     public class EconomyEvent
     {
         private const bool _debugThisClass = true;
+
+        public List<Faction> factionsEffected = new();
         public string EventName
         {
             get { return _EventName; }
@@ -57,29 +59,91 @@ namespace Economy
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
         }
 
-        public void TriggerEvent(Faction faction)
+        public int TriggerEvent(Faction faction)
         {
+            int numTriggered = 0;
+            if (!factionsEffected.Contains(faction))
+            {
+                //do something
+                factionsEffected.Add(faction);
+                foreach(TradeStation tradeStation in faction.tradeStations)
+                {
+                    if (!tradeStation.economyEvents.Contains(this))
+                    {
+                        tradeStation.economyEvents.Add(this);
+                        numTriggered++;
+                    }
+                }
 #pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on Faction {faction.factionName}!");
+                if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on Faction {faction.factionName}!");
 #pragma warning restore CS0162 // Unreachable code detected
+            }
+            return numTriggered;
         }
-        public void TriggerEvent(TradeStation tradeStation)
+        public int TriggerEvent(TradeStation tradeStation)
         {
+            if (!tradeStation.economyEvents.Contains(this))
+            {
+                //do something
+                tradeStation.economyEvents.Add(this);
 #pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
+                if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
 #pragma warning restore CS0162 // Unreachable code detected
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        public int StopEvent(Faction faction)
+        {
+            int numTriggered = 0;
+            if (factionsEffected.Contains(faction))
+            {
+                //do something
+                factionsEffected.Remove(faction);
+                foreach (TradeStation tradeStation in faction.tradeStations)
+                {
+                    if (tradeStation.economyEvents.Contains(this))
+                    {
+                        tradeStation.economyEvents.Remove(this);
+                        numTriggered++;
+                    }
+                }
+#pragma warning disable CS0162 // Unreachable code detected
+                if (_debugThisClass) Debug.Log($"The {EventName} Event has been concluded for the Faction {faction.factionName}!");
+#pragma warning restore CS0162 // Unreachable code detected
+            }
+            return numTriggered;
+        }
+        public int StopEvent(TradeStation tradeStation)
+        {
+            if (tradeStation.economyEvents.Contains(this))
+            {
+                //do something
+                tradeStation.economyEvents.Remove(this);
+#pragma warning disable CS0162 // Unreachable code detected
+                if (_debugThisClass) Debug.Log($"The {EventName} Event has been concluded for the Faction {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
+#pragma warning restore CS0162 // Unreachable code detected
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
         public string GetItemClassesImpactedByThisEvent()
         {
             return ItemClassesEffectedByEvent?.Count > 0
-                ? string.Join("\n", ItemClassesEffectedByEvent.Select(x => x)) 
+                ? string.Join("\n", ItemClassesEffectedByEvent.Select(x => x))
                 : "None";
         }
         public override string ToString()
         {
             return
-                $"Item name: {EventName}\n" +
-                $"Item description: {Description}\n" +
+                $"Event name: {EventName}\n" +
+                $"Event description: {Description}\n" +
                 $"Item classes effected by this event: \n{GetItemClassesImpactedByThisEvent()}\n\n";
         }
     }

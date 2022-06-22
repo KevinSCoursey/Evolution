@@ -12,6 +12,7 @@ namespace Economy
 
         public string tradeStationName = string.Empty;
         public string tradeStationDescription = string.Empty;
+        public List<EconomyEvent> economyEvents = new();
 
         public Faction associatedFaction;
         //public Dictionary<EconomyItem, int> items = new Dictionary<EconomyItem, int>();//item, price

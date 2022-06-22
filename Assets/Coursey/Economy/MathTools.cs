@@ -47,10 +47,10 @@ namespace Economy
                         pseudoRandomIntPairArray[y, 1] = PseudoRandomInt(min, max);
                     }
                 }
-                /*string.Join(debugString, y == height - 1 ? 
+                string.Join(debugString, y == height - 1 ? 
                     $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}]" : 
                     $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}], ");
-                */
+                
                 if(y < height - 1) debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}], ";
                 else debugString += $"[{pseudoRandomIntPairArray[y, 0]}][{pseudoRandomIntPairArray[y, 1]}]";
 

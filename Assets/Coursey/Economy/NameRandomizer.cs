@@ -22,22 +22,6 @@ namespace Economy
         {
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
         };
-        private static readonly List<string> commonLetterPairs = new List<string>
-        {
-            "sh", "th", "sk", "fr", "vm", "cs", "he", "an", "in", "er", "nd", "re", 
-            "ed", "es", "to", "ha", "en", "ea", "st", "nt", "on", "at", "hi", "as", 
-            "is", "or", "et", "of", "ti", "ar", "te", "se", "me", "sa", "ne", "wa",
-            "ve", "le", "no", "ta", "al", "de", "ot", "so", "dt", "el", "ro",
-            "ad", "di", "ew", "ra", "ri", "xi", "po", "mo", "pl", "it", "ng",
-        };
-        private static readonly List<string> specialCharactersCenter = new List<string>
-        {
-            "-"
-        };
-        private static readonly List<string> specialCharactersTrailing = new List<string>
-        {
-            "-1", "-2", "-3", "-4", "-5", "-6", "-7", "-8", "-9"
-        };
         private static List<string> letterPairList;
 
         private readonly static Dictionary<string, int> letterPairWeights = new Dictionary<string, int>();
@@ -57,16 +41,6 @@ namespace Economy
                     }
                 }
             }
-/*#pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass)
-            {
-                Debug.Log($"Vowel pairs:");
-                foreach (string vowelPair in vowelPairs)
-                {
-                    Debug.Log($"{vowelPair}  ");
-                }
-            }
-#pragma warning restore CS0162 // Unreachable code detected*/
         }
         public static void Initialize()
         {
@@ -221,25 +195,6 @@ namespace Economy
                 totalLetterChance += letterPairWeights[key];
             }
         } 
-        private static string GetRandomLetter()
-        {
-            string randLetter = string.Empty;
-            int randLetterInt = MathTools.PseudoRandomInt(1, totalLetterChance);
-            int parse = 0;
-            for(int i = 1; i < 27; i++)
-            {
-                if(parse >= randLetterInt)
-                {
-                    randLetter = alphabet[i-1];
-                    return randLetter;
-                }
-                else
-                {
-                    parse += letterWeights[i];
-                }
-            }
-            return randLetter;
-        }
         private static string GetRandomLetterPair()
         {
             return letterPairList[MathTools.PseudoRandomInt(1, letterPairList.Count)];
@@ -262,7 +217,6 @@ namespace Economy
             int parse = 0;
             for(int i = 0; i < letterList.Count; i++)
             {
-                //Debug.Log($"{parse} {randLetterInt} {weight} {letterList[i]}");
                 if (parse >= randLetterInt)
                 {
                     
@@ -282,7 +236,6 @@ namespace Economy
             int nameLength = MathTools.PseudoRandomInt(4, 10);
             for(int i = 2; i < nameLength; i++)
             {
-                //Debug.Log(uniqueName);
                 if(MathTools.PseudoRandomInt(0,3) == 1)
                 {
                     uniqueName += vowels[MathTools.PseudoRandomInt(0, vowels.Count)];
@@ -326,7 +279,6 @@ namespace Economy
                 if (index > 1 && index < str.Length)
                 {
                     string checkPair = str[index - 1].ToString() + str[index].ToString();
-                    //Debug.Log($"{checkPair} {letterPairWeights[checkPair]}");
                     if (letterPairWeights[checkPair] <= 7)
                     {
                         str = str.Remove(index-1, 1);
@@ -359,77 +311,6 @@ namespace Economy
                 str += vowels[MathTools.PseudoRandomInt(0, vowels.Count)];
             }
             return str;
-        }
-        public static string GenerateUniqueName(NameType nameType, int iteration = 0)
-        {
-            string uniqueName = string.Empty;
-            bool hasAVowel = false;
-            bool hasSpecialCharacter = false;
-
-            int numCharAdd = MathTools.PseudoRandomInt(2, 10);
-            for(int i = 0; i < numCharAdd; i++)
-            {
-                if(i > 0 && MathTools.PseudoRandomInt(1, 15) == 1 && !hasSpecialCharacter)//no special first character & odds of having special-character
-                {
-                    if(i == numCharAdd - 1)
-                    {
-                        uniqueName += specialCharactersTrailing[MathTools.PseudoRandomInt(1, specialCharactersTrailing.Count)];
-                        hasSpecialCharacter = true;
-                    }
-                    else
-                    {
-                        uniqueName += specialCharactersCenter[MathTools.PseudoRandomInt(0, specialCharactersCenter.Count-1)];
-                        hasSpecialCharacter = true;
-                    }
-                }
-                else
-                {
-                    if (MathTools.PseudoRandomInt(1, vowels.Count + nonVowels.Count + commonLetterPairs.Count) <= vowels.Count)//add vowel
-                    {
-                        hasAVowel = true;
-                        string vowelToAdd = vowels[MathTools.PseudoRandomInt(1, vowels.Count)];
-                        uniqueName = vowelPairs.Contains(uniqueName + vowelToAdd) ? uniqueName + nonVowels[MathTools.PseudoRandomInt(1, nonVowels.Count)] : uniqueName + vowelToAdd;
-                    }
-                    else
-                    {
-                        if (!hasAVowel && i > 0)//add vowel after 2nd letter if one doesnt already exist in name
-                        {
-                            uniqueName += vowels[MathTools.PseudoRandomInt(1, vowels.Count)];
-                        }
-                        else//add non-vowel
-                        {
-                            if(MathTools.PseudoRandomInt(1, nonVowels.Count + commonLetterPairs.Count) > nonVowels.Count)
-                            {
-                                uniqueName += commonLetterPairs[MathTools.PseudoRandomInt(1, commonLetterPairs.Count)];
-                            }
-                            else
-                            {
-                                uniqueName += nonVowels[MathTools.PseudoRandomInt(1, nonVowels.Count)];
-                            }
-                        }
-                    }
-                }
-            }
-            uniqueName = PrettifyString(uniqueName);
-
-            List<string> nameList = namesGenerated[nameType];
-
-            //namesGenerated.TryGetValue(nameType, out nameList);
-
-            if (!nameList.Contains(uniqueName))
-            {
-                nameList.Add(uniqueName);
-                namesGenerated[nameType] = nameList;
-                return uniqueName;
-            }
-            else if(iteration <= 5)
-            {
-                return GenerateUniqueName(nameType, iteration++);
-            }
-            else
-            {
-                return uniqueName;
-            }
         }
 
         public static string PrettifyString(string str)
