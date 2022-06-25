@@ -7,7 +7,7 @@ Assets/AssetStoreTools*
 Assets/Mirror/Examples*
 Assets/MirrorPackage*
 Assets/Fonts*
-Logs/
+[Ll]ogs/
 Multiplayer_BurstDebugInformation_DoNotShip/
 
 # Visual Studio cache directory
