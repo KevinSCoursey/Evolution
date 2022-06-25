@@ -42,7 +42,7 @@ namespace Economy
                 }
             }
         }
-        public static void Initialize()
+        public static bool Initialize()
         {
             foreach(NameType nameType in (NameType[])Enum.GetValues(typeof(NameType)))
             {
@@ -51,6 +51,7 @@ namespace Economy
             GenerateVowelPairs();
             EstablishLetterWeights();
             letterPairList = letterPairWeights.Keys.ToList();
+            return true;
         }
         private static void EstablishLetterWeights()
         {//changed ox, hh, qi, dd

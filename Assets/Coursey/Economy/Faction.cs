@@ -63,7 +63,7 @@ namespace Economy
         }
         public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
         {
-            int rand = 1;// MathTools.PseudoRandomInt(1, 10);//random.Next(1, 10);
+            int rand = MathTools.PseudoRandomInt(1, GameSettings.MaxTradeStationsPerFaction);//random.Next(1, 10);
 
             //Just makes this not cause a compile warning
 #pragma warning disable CS0162 // Unreachable code detected

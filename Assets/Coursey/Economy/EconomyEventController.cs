@@ -33,7 +33,7 @@ namespace Economy
         public EconomyEventController(FactionController factionController)
         {
             this.factionController = factionController;
-            Initialize();
+            //Initialize();
         }
         public void Initialize()
         {

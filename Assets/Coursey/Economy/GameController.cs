@@ -1,24 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 namespace Economy
-{ 
+{
     public class GameController : MonoBehaviour
     {
         private const bool _debugThisClass = true;
-        private bool gameLoaded = false;
+        public static bool gameLoaded { get; private set; } = false;
         public bool gameRunning = true;
         public int tickCounter = 0;
 
-        public static int seed = 8675309;
+        public static int seed = 0;//8675309;
         public FactionController factionController;
         public EconomyController economyController;
         void Start()
         {
-            MathTools.Initialize(seed);
-            NameRandomizer.Initialize();
+            gameLoaded = GameSettings.LoadSettings() && MathTools.Initialize(seed) && NameRandomizer.Initialize();
 
             /*for (int i = 0; i < 100; i++)
             {
@@ -36,8 +32,10 @@ namespace Economy
 
             //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
             //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction(), true);
-            gameLoaded = true;
-            StartCoroutine(GameLoop());
+            
+            //InvokeRepeating("GameLoop", 1f, (float)(1 / GameSettings.TicksPerSecond));
+            Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
+            InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
         }
 
         public void StopGame()
@@ -45,29 +43,26 @@ namespace Economy
             gameLoaded = false;
         }
 
-        IEnumerator GameLoop()
+        public void GameLoop()
         {
-            while (gameRunning && gameLoaded)
+            if (gameRunning && gameLoaded)
             {
                 if (tickCounter >= GameSettings.TicksPerSecond)
                 {
                     GameTime.Seconds++;
                     tickCounter = 0;
                 }
-                else
-                {
-                    tickCounter++;
-                }
 
+                tickCounter++;
+
+                Debug.Log(GameTime.GetGameTimeString());
                 economyController.economyEventController.GameLoop();
                 factionController.GameLoop();
 
-                if(GameTime.Minutes == 1)
+                if (GameTime.Minutes >= 1)
                 {
                     gameRunning = false;
                 }
-
-                yield return new WaitForSeconds(1 / GameSettings.TicksPerSecond);
             }
         }
     }

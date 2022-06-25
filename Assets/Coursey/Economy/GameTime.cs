@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,8 @@ namespace Economy
                 {
                     _Seconds = 0;
                     Minutes++;
+                    TimeBasedCalls();
+                    _TimeReference = (int)Time.time;
                 }
                 else
                 {
@@ -25,7 +28,8 @@ namespace Economy
                 }
             }
         }
-        private static int _Seconds = 0;
+        private static int _Seconds = 1;
+        private static int _TimeReference = 0;
         public static int Minutes
         {
             get
@@ -38,6 +42,7 @@ namespace Economy
                 {
                     _Minutes = 0;
                     Hours++;
+                    TimeBasedCalls();
                 }
                 else
                 {
@@ -87,9 +92,27 @@ namespace Economy
         }
         private static int _Days = 0;
         public static int Years = 0;
-        public static void Initialize()
+        public static string GetGameTimeString()
         {
-            
+            return $"Game Time: {Years} Years, {Days} Days, {Minutes} Minutes, {Seconds} Seconds,\n Real Time: ({DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss")})";
+        }
+        public static void TimeBasedCalls()
+        {
+            SkipTimeToCatchUp(IsGameRunningBehind());
+        }
+        public static void SkipTimeToCatchUp(bool isLagging)
+        {
+            //dosomething
+        }
+        public static bool IsGameRunningBehind()
+        {
+            int timeDifference = _TimeReference - (int)Time.time;
+            if (timeDifference != 60)
+            {
+                //broken
+                //Debug.Log($"Game is running behind by {timeDifference} seconds!");
+            }
+            return false;
         }
     }
 
