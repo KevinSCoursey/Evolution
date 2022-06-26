@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+
 
 namespace Economy
 {
@@ -10,12 +12,15 @@ namespace Economy
         public string tradeStationName = string.Empty;
         public string tradeStationDescription = string.Empty;
         public List<EconomyEvent> economyEvents = new();
+        public System.Guid guid;
 
         public Faction associatedFaction;
         //public Dictionary<EconomyItem, int> items = new Dictionary<EconomyItem, int>();//item, price
         //public Dictionary<EconomyItem, int> inventory = new Dictionary<EconomyItem, int>();//item, quantity
         public List<EconomyItem> specializedItems = new();
         public List<EconomyItem> inventoryItems = new();
+        public List<TradeRoute> internalTradeRoutes = new();
+        public List<TradeRoute> externalTradeRoutes = new();
 
         public TradeStation(List<Faction> factions, Faction associatedFaction, List<EconomyItem> economyItems, string tradeStationName = "Unnamed station", string tradeStationDescription = "No description provided.")
         {
@@ -24,6 +29,7 @@ namespace Economy
             this.tradeStationName = tradeStationName;
             this.tradeStationDescription = tradeStationDescription;
             this.economyItems = economyItems;
+            guid = Guid.NewGuid();
             InitializeInventory();
             CalculateItemDistribution();
             CalculatePriceDistribution();
@@ -68,7 +74,7 @@ namespace Economy
         {
             foreach (IEconomyItem item in inventoryItems)
             {
-                item.QuantityOfItem = MathTools.PseudoRandomInt(0, item.MaxQuantityOfItem);//max currently 10000
+                item.QuantityOfItem = MathTools.PseudoRandomIntExclusiveMax(0, item.MaxQuantityOfItem);//max currently 10000
             }
         }
         public void ProduceItems()
@@ -84,7 +90,7 @@ namespace Economy
                     }
                 }
                 item.QuantityOfItem = (int)(factor *
-                    (item.QuantityOfItem + GameSettings.AverageEconomyItemsProducedPerTick + MathTools.PseudoRandomInt(1, 5 * item.RarityInt)));
+                    (item.QuantityOfItem + GameSettings.AverageEconomyItemsProducedPerTick + MathTools.PseudoRandomIntExclusiveMax(1, 5 * item.RarityInt)));
             }
         }
         public void UseItems()
@@ -101,7 +107,7 @@ namespace Economy
                 }
                 item.QuantityOfItem = (int)(factor *
                     (item.QuantityOfItem - GameSettings.AverageEconomyItemsProducedPerTick -
-                    MathTools.PseudoRandomInt(1 * item.RarityInt, 5 * item.RarityInt)));
+                    MathTools.PseudoRandomIntExclusiveMax(1 * item.RarityInt, 5 * item.RarityInt)));
             }
         }
         public string LogItemsAvailable()

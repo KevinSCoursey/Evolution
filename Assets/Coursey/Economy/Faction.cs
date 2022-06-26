@@ -63,9 +63,8 @@ namespace Economy
         }
         public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
         {
-            int rand = MathTools.PseudoRandomInt(1, GameSettings.MaxTradeStationsPerFaction);//random.Next(1, 10);
+            int rand = MathTools.PseudoRandomIntExclusiveMax(GameSettings.MinTradeStationsPerFaction, GameSettings.MaxTradeStationsPerFaction);
 
-            //Just makes this not cause a compile warning
 #pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass) Debug.Log($"Adding {rand} Trade Station(s) to the {factionName} Faction...\n");
 #pragma warning restore CS0162 // Unreachable code detected
@@ -75,7 +74,6 @@ namespace Economy
                 TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems, tradeStationName: NameRandomizer.GenerateUniqueNamev2());
                 tradeStations.Add(tradeStationToAdd);
 
-                //Just makes this not cause a compile warning
 #pragma warning disable CS0162 // Unreachable code detected
                 if (_debugThisClass) Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
 #pragma warning restore CS0162 // Unreachable code detected

@@ -198,7 +198,7 @@ namespace Economy
         } 
         private static string GetRandomLetterPair()
         {
-            return letterPairList[MathTools.PseudoRandomInt(1, letterPairList.Count)];
+            return letterPairList[MathTools.PseudoRandomIntExclusiveMax(1, letterPairList.Count)];
         }
         private static string GetNextRandomLetter(string letter)
         {
@@ -214,7 +214,7 @@ namespace Economy
                 }
             }
 
-            int randLetterInt = MathTools.PseudoRandomInt(1, weight);
+            int randLetterInt = MathTools.PseudoRandomIntExclusiveMax(1, weight);
             int parse = 0;
             for(int i = 0; i < letterList.Count; i++)
             {
@@ -234,12 +234,12 @@ namespace Economy
         public static string GenerateUniqueNamev2()
         {
             string uniqueName = GetRandomLetterPair();
-            int nameLength = MathTools.PseudoRandomInt(4, 10);
+            int nameLength = MathTools.PseudoRandomIntExclusiveMax(4, 10);
             for(int i = 2; i < nameLength; i++)
             {
-                if(MathTools.PseudoRandomInt(0,3) == 1)
+                if(MathTools.PseudoRandomIntExclusiveMax(0,3) == 1)
                 {
-                    uniqueName += vowels[MathTools.PseudoRandomInt(0, vowels.Count)];
+                    uniqueName += vowels[MathTools.PseudoRandomIntExclusiveMax(0, vowels.Count)];
                 }
                 else
                 {
@@ -268,7 +268,7 @@ namespace Economy
                 }
                 if(numSinceLastVowel > 1 && index < str.Length - 1)
                 {
-                    str = str.Substring(0, index) + vowels[MathTools.PseudoRandomInt(0, vowels.Count)] + str.Substring(index);
+                    str = str.Substring(0, index) + vowels[MathTools.PseudoRandomIntExclusiveMax(0, vowels.Count)] + str.Substring(index);
                     numVowelsInARow++;
                     numSinceLastVowel = 0;
                 }
@@ -305,11 +305,11 @@ namespace Economy
             }
             if(numVowels == 0 && str.Length >= 2)
             {
-                str = str.Substring(0, 1) + vowels[MathTools.PseudoRandomInt(0, vowels.Count)] + str.Substring(2);
+                str = str.Substring(0, 1) + vowels[MathTools.PseudoRandomIntExclusiveMax(0, vowels.Count)] + str.Substring(2);
             }
             if(str.Length <= 2)
             {
-                str += vowels[MathTools.PseudoRandomInt(0, vowels.Count)];
+                str += vowels[MathTools.PseudoRandomIntExclusiveMax(0, vowels.Count)];
             }
             return str;
         }

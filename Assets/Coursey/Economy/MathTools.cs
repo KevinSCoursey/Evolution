@@ -20,17 +20,52 @@ namespace Economy
         {
             return random.Next();
         }
-        public static int PseudoRandomInt(int min, int max)
+        public static bool CoinFlip()
         {
-            //Thread.Sleep(random.Next(1, random.Next(1,10)));//probably totally unnecessary
-
-            return min >= max ? min : random.Next(min, max);
+            bool rand = random.Next(2) == 0;
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass)
+            {
+                Debug.Log($"Coin flip... {rand}");
+            }
+#pragma warning restore CS0162 // Unreachable code detected
+            return rand;
+        }
+        public static int PseudoRandomIntExclusiveMax(int min, int max)
+        {
+            int rand = min >= max
+                ? min
+                : random.Next(min, max);
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass)
+            {
+                Debug.Log($"Random number (exclusive max) between {min} and {max} ... {rand}");
+            }
+#pragma warning restore CS0162 // Unreachable code detected
+            return rand;
+        }
+        public static int PseudoRandomIntExcluding(int min, int max, int exclude)
+        {
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass)
+            {
+                Debug.Log($"Random number (excluding {exclude}) from {min} to {max} excluding {max}");
+            }
+#pragma warning restore CS0162 // Unreachable code detected
+            if (CoinFlip())
+            {
+                return PseudoRandomIntExclusiveMax(min, exclude);
+            }
+            else
+            {
+                return PseudoRandomIntExclusiveMax(exclude, max);
+            }
         }
         public static float PseudoRandomFloat(float min, float max)
         {
-            //Thread.Sleep(random.Next(1, random.Next(1, 10)));//probably totally unnecessary
-
-            return min >= max ? min : (float)(random.NextDouble() * (max - min) + min);
+            return min >= max
+                ? min
+                : (float)(random.NextDouble() * (max - min) + min);
         }
         public static int[,] PseudoRandomIntPairArray(int height, int min, int max, bool firstNumberAlwaysLarger = false)
         {
@@ -38,14 +73,14 @@ namespace Economy
             int[,] pseudoRandomIntPairArray = new int[height, 2];
             for (int y = 0; y < height; y ++)
             {
-                pseudoRandomIntPairArray[y, 0] = PseudoRandomInt(min, max);
-                pseudoRandomIntPairArray[y, 1] = PseudoRandomInt(min, max);
+                pseudoRandomIntPairArray[y, 0] = PseudoRandomIntExclusiveMax(min, max);
+                pseudoRandomIntPairArray[y, 1] = PseudoRandomIntExclusiveMax(min, max);
                 if (firstNumberAlwaysLarger && pseudoRandomIntPairArray[y, 0] <= pseudoRandomIntPairArray[y, 1])
                 {
                     while(pseudoRandomIntPairArray[y, 0] <= pseudoRandomIntPairArray[y, 1])
                     {
-                        pseudoRandomIntPairArray[y, 0] = PseudoRandomInt(min, max);
-                        pseudoRandomIntPairArray[y, 1] = PseudoRandomInt(min, max);
+                        pseudoRandomIntPairArray[y, 0] = PseudoRandomIntExclusiveMax(min, max);
+                        pseudoRandomIntPairArray[y, 1] = PseudoRandomIntExclusiveMax(min, max);
                     }
                 }
                 string.Join(debugString, y == height - 1 ? 

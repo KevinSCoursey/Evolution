@@ -10,7 +10,6 @@ namespace Economy
     public class JsonManager
     {
         private string _path;
-
         public JsonManager(string subdirectory = "config")
         {
             /*_path = Directory.Exists(Path.Combine(Application.persistentDataPath, subdirectory))

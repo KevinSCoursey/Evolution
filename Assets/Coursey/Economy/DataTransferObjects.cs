@@ -5,18 +5,22 @@ namespace Economy
 {
     public class EconomyConfig : IDataTransferObject
     {
-        public static float TicksPerSecond { get; set; } = 1;
-        public static float EconomyEventChancePerTick { get; set; } = 0.015f;
-        public static float EconomyEventEffectWholeFactionChance { get; set; } = 0.015f;//multiply by 1000 then take it as a chance out of 1000
-        public static float EconomyEventChanceToRemove { get; set; } = 0.025f;
-        public static int AverageEconomyItemsProducedPerTick { get; set; } = 5;
-        public static int AverageEconomyItemsUsedPerTick { get; set; } = 5;
-        public static int MaxTradeStationsPerFaction { get; set; } = 10;
+        public float TicksPerSecond { get; set; } = 1;
+        public float EconomyEventChancePerTick { get; set; } = 0.015f;
+        public float EconomyEventEffectWholeFactionChance { get; set; } = 0.015f;//multiply by 1000 then take it as a chance out of 1000
+        public float EconomyEventChanceToRemove { get; set; } = 0.025f;
+        public int AverageEconomyItemsProducedPerTick { get; set; } = 5;
+        public int AverageEconomyItemsUsedPerTick { get; set; } = 5;
+        public int MinTradeStationsPerFaction { get; set; } = 1;
+        public int MaxTradeStationsPerFaction { get; set; } = 10;
+        public int MaxInternalTradeRoutesPerStation { get; set; } = 3;
+        public int MaxExternalTradeRoutesPerStation { get; set; } = 3;
+        public int MaxAttemptsToGenerateSomething { get; set; } = 5;
     }
-    public class GeneralSettings : IDataTransferObject
+    public class GeneralConfig : IDataTransferObject
     {
         public int seed = 8675309;
-        public float MinutesGameWillRun { get; set; } = 1;
+        public float MinutesGameWillRunFloat { get; set; } = 0.1f;
     }
     public interface IDataTransferObject
     {

@@ -96,6 +96,12 @@ namespace Economy
         {
             return $"Game Time: {Years} Years, {Days} Days, {Minutes} Minutes, {Seconds} Seconds,\n Real Time: ({DateTime.Now.ToString("yyyy/MM/dd hh:mm:ss")})";
         }
+        public static int GetSecondsRunning()
+        {
+            int sec = Seconds;
+            if (Minutes > 0) sec = Seconds + Minutes * 60;
+            return sec;
+        }
         public static void TimeBasedCalls()
         {
             SkipTimeToCatchUp(IsGameRunningBehind());

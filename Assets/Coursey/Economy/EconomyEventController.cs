@@ -57,7 +57,7 @@ namespace Economy
         }
         private bool ShouldEventBeTriggered()
         {
-            if(MathTools.PseudoRandomInt(1,1000) <= (int)(GameSettings.EconomyEventChancePerTick * 1000))
+            if(MathTools.PseudoRandomIntExclusiveMax(1,1000) <= (int)(GameSettings.EconomyEventChancePerTick * 1000))
             {
                 return true;
             }
@@ -65,7 +65,7 @@ namespace Economy
         }
         private bool ShouldEventBeOnWholeFaction()
         {
-            if (MathTools.PseudoRandomInt(1, 1000) <= (int)(GameSettings.EconomyEventEffectWholeFactionChance * 1000))
+            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventEffectWholeFactionChance * 1000))
             {
                 return true;
             }
@@ -73,7 +73,7 @@ namespace Economy
         }
         private bool ShouldEventBeRemoved()
         {
-            if (MathTools.PseudoRandomInt(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000) * ConcurrentEvents)
+            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000) * ConcurrentEvents)
             {
                 return true;
             }
@@ -131,14 +131,14 @@ namespace Economy
         }
         public int TriggerRandomEvent(Faction faction, bool impactEntireFaction = false)
         {
-            int economyEventIndex = MathTools.PseudoRandomInt(0, economyEvents.Count);
+            int economyEventIndex = MathTools.PseudoRandomIntExclusiveMax(0, economyEvents.Count);
             if (impactEntireFaction)
             {
                 return economyEvents[economyEventIndex].TriggerEvent(faction);
             }
             else
             {
-                int tradeStationIndex = MathTools.PseudoRandomInt(0, faction.tradeStations.Count);
+                int tradeStationIndex = MathTools.PseudoRandomIntExclusiveMax(0, faction.tradeStations.Count);
                 return economyEvents[economyEventIndex].TriggerEvent(faction.tradeStations[tradeStationIndex]);
             }
         }
@@ -152,7 +152,7 @@ namespace Economy
         }
         public int RemoveRandomEvent(Faction faction, bool impactEntireFaction = false)
         {
-            int economyEventIndex = MathTools.PseudoRandomInt(0, economyEvents.Count);
+            int economyEventIndex = MathTools.PseudoRandomIntExclusiveMax(0, economyEvents.Count);
             if (impactEntireFaction)
             {
                 return economyEvents[economyEventIndex].StopEvent(faction);
@@ -160,7 +160,7 @@ namespace Economy
             }
             else
             {
-                int tradeStationIndex = MathTools.PseudoRandomInt(0, faction.tradeStations.Count);
+                int tradeStationIndex = MathTools.PseudoRandomIntExclusiveMax(0, faction.tradeStations.Count);
                 return economyEvents[economyEventIndex].StopEvent(faction.tradeStations[tradeStationIndex]);
             }
         }

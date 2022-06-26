@@ -21,7 +21,6 @@ namespace Economy
                 Debug.Log(NameRandomizer.GenerateUniqueNamev2(NameType.Faction));
             }*/
 
-            //Just makes this not cause a compile warning
 #pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass) Debug.Log($"Seed: {seed}");
 #pragma warning restore CS0162 // Unreachable code detected
@@ -29,11 +28,8 @@ namespace Economy
             factionController = new FactionController();
             economyController = new EconomyController(factionController);
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
+            factionController.GenerateRandomTradeRoutes();
 
-            //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction());
-            //economyController.economyEventController.TriggerRandomEvent(factionController.GetRandomFaction(), true);
-            
-            //InvokeRepeating("GameLoop", 1f, (float)(1 / GameSettings.TicksPerSecond));
             Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
             InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
         }
@@ -41,6 +37,8 @@ namespace Economy
         public void StopGame()
         {
             gameLoaded = false;
+            Debug.Log($"Game has stopped.");
+            Application.Quit();
         }
 
         public void GameLoop()
@@ -59,9 +57,10 @@ namespace Economy
                 economyController.economyEventController.GameLoop();
                 factionController.GameLoop();
 
-                if (GameTime.Minutes >= 1)
+                if (GameTime.GetSecondsRunning() >= (60f * GameSettings.MinutesGameWillRunFloat))
                 {
                     gameRunning = false;
+                    StopGame();
                 }
             }
         }

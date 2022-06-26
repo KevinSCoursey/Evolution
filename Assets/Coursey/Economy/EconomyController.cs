@@ -11,6 +11,7 @@ namespace Economy
 
         public EconomyItemController economyItemController;
         public EconomyEventController economyEventController;
+        public static List<TradeRoute> AllTradeRoutes = new List<TradeRoute>();
 
         public EconomyController(FactionController factionController)
         {
@@ -20,6 +21,17 @@ namespace Economy
             economyEventController = new EconomyEventController(factionController);
             Initialize();
         }
+
+        public static bool DoesTradeRouteExist(TradeRoute tradeRoute)
+        {
+            if (AllTradeRoutes.Count == 0 || tradeRoute == null) return false;
+            foreach(var tradeRouteParse in AllTradeRoutes)
+            {
+                if(tradeRouteParse.Equals(tradeRoute)) return true;
+            }
+            return false;
+        }
+        
         public void Initialize()
         {
             economyItemController.Initialize();
