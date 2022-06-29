@@ -1,3 +1,16 @@
+/*
+ * 2 million trade stations /
+ * each station w/ 4 routes /
+ * 25 commodities /
+ * 10 factions /
+ * 
+ * var start = DateTime.Now;
+ * ...
+ * var stop = DateTime.Now;
+ * var elapsed = stop - start;
+ * Debug.Log($"This took {elapsed.TotalMilliseconds} ms to run.");
+ */
+using System;
 using UnityEngine;
 
 namespace Economy
@@ -33,16 +46,15 @@ namespace Economy
             Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
             InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
         }
-
         public void StopGame()
         {
             gameLoaded = false;
             Debug.Log($"Game has stopped.");
             Application.Quit();
         }
-
         public void GameLoop()
         {
+            var start = DateTime.Now;
             if (gameRunning && gameLoaded)
             {
                 if (tickCounter >= GameSettings.TicksPerSecond)
@@ -62,6 +74,9 @@ namespace Economy
                     gameRunning = false;
                     StopGame();
                 }
+                var stop = DateTime.Now;
+                var elapsed = stop - start;
+                Debug.Log($"One tick took {elapsed.TotalMilliseconds} ms to run.");
             }
         }
     }

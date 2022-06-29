@@ -13,10 +13,14 @@ namespace Economy
         public static int AverageEconomyItemsProducedPerTick = 5;
         public static int AverageEconomyItemsUsedPerTick = 5;
         public static int MaxTradeStationsPerFaction = 10;
+        public static int MinTradeStationsPerFaction = 1;
         public static int MaxInternalTradeRoutesPerTradeStation = 3;
         public static int MaxExternalTradeRoutesPerTradeStation = 3;
         public static int MaxAttemptsToGenerateSomething = 5;
-        public static int MinTradeStationsPerFaction = 1;
+        public static int AverageMoneyHeldPerTradeStation = 150000;
+        public static int AverageNumItemsExchangedPerTrade = 3;
+        public static float PercentTaxExternalTrades = 1.5f;
+        public static float SameFactionPriceDiscount = 1.5f;
 
         public static float MinutesGameWillRunFloat = 1f;
         //15 minute recalculation
@@ -59,6 +63,8 @@ namespace Economy
             MaxExternalTradeRoutesPerTradeStation = economySettings.MaxExternalTradeRoutesPerStation;
             MaxAttemptsToGenerateSomething = economySettings.MaxAttemptsToGenerateSomething;
             MinTradeStationsPerFaction = economySettings.MinTradeStationsPerFaction;
+            AverageMoneyHeldPerTradeStation = economySettings.AverageMoneyHeldPerTradeStation;
+            AverageNumItemsExchangedPerTrade = economySettings.AverageNumItemsExchangedPerTrade;
             jsonManager.WriteConfig(economySettings);
         }
     }

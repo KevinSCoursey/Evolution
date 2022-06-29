@@ -1,6 +1,9 @@
 using System;
 using System.Threading;
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
 namespace Economy
 {
     public static class MathTools
@@ -15,7 +18,34 @@ namespace Economy
             random = new System.Random(seed);
             return true;
         }
+        public static int[] GetRandomIndexes<T>(List<T> listToParse, int numIndexes)
+        {
+            if (numIndexes == 0 || listToParse.Count == 0)
+            {
+                return null;
+            }
+            numIndexes = numIndexes > listToParse.Count//wil this cause out of bounds?
+                ? listToParse.Count 
+                : numIndexes;
+            List<int> index = new ();
+            for(int i = 0; i < numIndexes; i++)
+            {
+                int indexToAdd = PseudoRandomIntExclusiveMax(0, listToParse.Count);
+                int attempt = 0;
+                while (index.Contains(listToParse.IndexOf(listToParse[indexToAdd])) && attempt <= GameSettings.MaxAttemptsToGenerateSomething)
+                {
+                    attempt++;
+                    indexToAdd = PseudoRandomIntExclusiveMax(0, listToParse.Count);
+                    
+                }
+                if (!index.Contains(listToParse.IndexOf(listToParse[indexToAdd])))
+                {
+                    index.Add(indexToAdd);
+                }
+            }
 
+            return index.ToArray();
+        }
         public static int PseudoRandomInt()
         {
             return random.Next();

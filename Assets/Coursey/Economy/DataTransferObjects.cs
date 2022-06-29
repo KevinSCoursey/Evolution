@@ -11,11 +11,14 @@ namespace Economy
         public float EconomyEventChanceToRemove { get; set; } = 0.025f;
         public int AverageEconomyItemsProducedPerTick { get; set; } = 5;
         public int AverageEconomyItemsUsedPerTick { get; set; } = 5;
-        public int MinTradeStationsPerFaction { get; set; } = 1;
-        public int MaxTradeStationsPerFaction { get; set; } = 10;
-        public int MaxInternalTradeRoutesPerStation { get; set; } = 3;
-        public int MaxExternalTradeRoutesPerStation { get; set; } = 3;
+        public int MinTradeStationsPerFaction { get; set; } = 2000000;//1;
+        public int MaxTradeStationsPerFaction { get; set; } = 2000000;//10;
+        public int MaxInternalTradeRoutesPerStation { get; set; } = 8;//3;
+        public int MaxExternalTradeRoutesPerStation { get; set; } = 8;//3;
         public int MaxAttemptsToGenerateSomething { get; set; } = 5;
+        public int AverageMoneyHeldPerTradeStation { get; set; } = 150000;
+        public int AverageNumItemsExchangedPerTrade { get; set; } = 3;
+
     }
     public class GeneralConfig : IDataTransferObject
     {

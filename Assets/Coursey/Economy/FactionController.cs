@@ -15,7 +15,15 @@ namespace Economy
         {
             //DEFAULT FACTIONS
             "Humans",
-            "The Zerg"
+            "The Zerg",
+            "PlaceholderFac1",
+            "PlaceholderFac2",
+            "PlaceholderFac3",
+            "PlaceholderFac4",
+            "PlaceholderFac5",
+            "PlaceholderFac6",
+            "PlaceholderFac7",
+            "PlaceholderFac8"
         };
         private List<string> factionDescriptions = new List<string>
         {
@@ -39,6 +47,7 @@ namespace Economy
                     tradeStation.UseItems();
                     tradeStation.ProduceItems();
                     tradeStation.CalculatePriceDistribution();
+                    tradeStation.ExecuteAllTrades();
 
 #pragma warning disable CS0162 // Unreachable code detected
                     if (_debugThisClass) Debug.Log($"{tradeStation}");
@@ -181,6 +190,7 @@ namespace Economy
         }
         public Faction GetRandomFactionExcludingThisOne(Faction exclude)
         {
+            //broken
             Faction faction = null; 
             if (exclude == null || factions.Count == 1)
             {
@@ -189,7 +199,7 @@ namespace Economy
             else
             {
                 int index = factions.IndexOf(exclude);
-                faction = factions[MathTools.PseudoRandomIntExcluding(0, factions.Count - 1, index)];
+                faction = factions[MathTools.PseudoRandomIntExcluding(0, factions.Count, index)];
             }
             return faction == exclude
                 ? null
@@ -205,7 +215,7 @@ namespace Economy
         public TradeStation GetRandomTradeStation(Faction faction)
         {
             return faction.tradeStations.Count > 1
-                ? faction.tradeStations[MathTools.PseudoRandomIntExclusiveMax(0, factions.Count)]
+                ? faction.tradeStations[MathTools.PseudoRandomIntExclusiveMax(0, faction.tradeStations.Count)]
                 : faction.tradeStations[0];
         }
         public TradeStation GetRandomTradeStationExcludingThisOne(TradeStation exclude)

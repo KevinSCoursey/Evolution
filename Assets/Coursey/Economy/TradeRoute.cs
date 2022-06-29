@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace Economy
 {
@@ -22,7 +23,6 @@ namespace Economy
                 && Item2.internalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
                 && Item1.externalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation
                 && Item2.externalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation;
-
 
             InternalTradeRoute = TradeRouteValid
                 ? Item1.associatedFaction == Item2.associatedFaction
@@ -45,10 +45,75 @@ namespace Economy
             }
 #pragma warning restore CS0162 // Unreachable code detected
         }
-
-        public void ConductTrade()
+        public void AI_ConductTrade()
         {
+            int numItemsToTrade = MathTools.PseudoRandomIntExclusiveMax(1, GameSettings.AverageNumItemsExchangedPerTrade * 2 - 1);
+            var itemsForItem1 = Trade.Item1.ItemsOfInterest();
+            var itemsForItem2 = Trade.Item2.ItemsOfInterest();
+            Debug.Log($"{numItemsToTrade} different item(s) will be traded, if possible.");
 
+            if (itemsForItem1.Count < numItemsToTrade)
+            {
+                Debug.Log($"{Trade.Item1.tradeStationName} reevaluated their interests.");
+                itemsForItem1.AddRange(Trade.Item1.ItemsOfInterest(0.5f));
+            }
+            if (itemsForItem2.Count < numItemsToTrade)
+            {
+                Debug.Log($"{Trade.Item2.tradeStationName} reevaluated their interests.");
+                itemsForItem2.AddRange(Trade.Item2.ItemsOfInterest(0.5f));
+            }
+            if (itemsForItem1.Count == 0 || itemsForItem2.Count == 0)
+            {
+                Debug.Log($"A trade between {Trade.Item1.associatedFaction.factionName}'s {Trade.Item1.tradeStationName} and " +
+                    $"{Trade.Item2.associatedFaction.factionName}'s {Trade.Item2.tradeStationName} wasn't able to be completed. " +
+                    $"There were no mutually beneficial items of interest this time.");
+            }
+            else
+            {
+                //TODO ACTUAL ITEM EXCHANGE
+                //itemsOfInterest.OrderBy(_ => MathTools.random.Next()).Take(numItemsToTrade);
+                Debug.Log($"A trade is occuring...");
+                int[] indexOfItemsToTradeItem1 = MathTools.GetRandomIndexes(itemsForItem1, numItemsToTrade);
+                List<EconomyItem> itemsToTradeItem1 = new();
+                int[] indexOfItemsToTradeItem2 = MathTools.GetRandomIndexes(itemsForItem2, numItemsToTrade);
+                List<EconomyItem> itemsToTradeItem2 = new();
+
+                for (int i = 0; i < indexOfItemsToTradeItem1.Length; i++)
+                {
+                    itemsToTradeItem1.Add(itemsForItem1[i]);
+                }
+
+                for (int i = 0; i < indexOfItemsToTradeItem2.Length; i++)
+                {
+                    itemsToTradeItem2.Add(itemsForItem2[i]);
+                }
+                foreach (EconomyItem item in itemsToTradeItem1)
+                {
+                    //no point trading item if they both need it
+                    if(itemsForItem2.Find(_ => _.ItemName == item.ItemName) == null)
+                    {
+                        Trade.Item1.AI_Buy(item, Trade.Item2);
+                    }
+                    else
+                    {
+                        Debug.Log($"Both {Trade.Item1.tradeStationName} and {Trade.Item2.tradeStationName} " +
+                            $"need {item.ItemName}, so it wasn't traded.");
+                    }
+                }
+                foreach (EconomyItem item in itemsToTradeItem2)
+                {
+                    //no point trading item if they both need it
+                    if (itemsForItem1.Find(_ => _.ItemName == item.ItemName) == null)
+                    {
+                        Trade.Item2.AI_Buy(item, Trade.Item1);
+                    }
+                    else
+                    {
+                        Debug.Log($"Both {Trade.Item2.tradeStationName} and {Trade.Item1.tradeStationName} " +
+                            $"need {item.ItemName}, so it wasn't traded.");
+                    }
+                }
+            }
         }
         public bool Equals(TradeRoute tradeRoute)
         {
