@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Data;
+using Mono.Data.Sqlite;
 
 namespace Economy
 {
@@ -37,6 +39,7 @@ namespace Economy
         public void Initialize()
         {
             AddDefaultFactions();
+            SaveFactionData();
         }
         public void GameLoop()
         {
@@ -235,5 +238,83 @@ namespace Economy
                 ? null
                 : tradeStation;
         }
+
+
+        #region SQLite
+        public void SaveFactionData()
+        {
+            using (var basicSql = new BasicSql())
+            {
+                if (GameSettings.RegenerateSQLiteDBsEachRun)
+                {
+                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS Factions");
+                }
+                basicSql.ExecuteNonReader(@"
+                CREATE TABLE IF NOT EXISTS Factions (Id INTEGER PRIMARY KEY, Name VARCHAR(100), Description TEXT);
+                ");
+
+                //NYI
+                basicSql.ExecuteNonReader(@"
+                CREATE TABLE IF NOT EXISTS FactionAllyLinks (Id INTEGER PRIMARY KEY, FacID1 INTEGER, FacID2 INTEGER);
+                ");
+
+
+                //NYI
+                basicSql.ExecuteNonReader(@"
+                CREATE TABLE IF NOT EXISTS FactionEnemyLinks (Id INTEGER PRIMARY KEY, FacID1 INTEGER, FacID2 INTEGER);
+                ");
+
+                foreach (var faction in factions)
+                {
+                    /*(int id, string name) = (int.Parse(
+                        basicSql.ExecuteScalar<string>(@"SELECT Id FROM Factions WHERE Id = $id;
+                    ")), 
+                        basicSql.ExecuteScalar<string>(@"SELECT Name FROM Factions WHERE Name = $name;
+                    "));*/
+                    string name = basicSql.ExecuteScalar<string>(@"SELECT Name FROM Factions WHERE Name = $name;",
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("$name", faction.factionName)
+                        }
+                    );
+
+                    if(string.IsNullOrEmpty(name))
+                    {
+                        basicSql.ExecuteNonReader(
+                            "INSERT INTO Factions (Name, Description) VALUES ($name, $description)",
+                            new List<KeyValuePair<string, string>>
+                            {
+                            new KeyValuePair<string, string>("$name", faction.factionName),
+                            new KeyValuePair<string, string>("$description", faction.factionDescription)
+                            }
+                            );
+                    }
+                }
+
+                //SELECT * FROM Factions WHERE Name = 'Humans'
+
+                /*                var name = "";
+                                basicSql.ExecuteReader(
+                                    "SELECT Name FROM Factions WHERE Name = $name",//run this command
+                                    new List<KeyValuePair<string, string>>()
+                                    {
+                                    new KeyValuePair<string, string>("$name", "Human")//with these parameters
+                                    },
+                                    (rowData) =>//for each result do this
+                                    {
+                                        name = rowData["Name"].ToString();
+                                    }
+                                    );
+
+                                name = basicSql.ExecuteScalar<string>(//make singluar result (<KVP>) of first thing that matches parameters
+                                    "SELECT Name FROM Factions WHERE Name = $name",//run this command
+                                    new List<KeyValuePair<string, string>>()
+                                    {
+                                    new KeyValuePair<string, string>("$name", "Human")//with these parameters
+                                    }
+                                    );*/
+            }
+        }
+        #endregion SQLite
     }
 }

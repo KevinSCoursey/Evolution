@@ -27,6 +27,7 @@ namespace Economy
         public EconomyController economyController;
         void Start()
         {
+            SQLiteData.Initialize();
             gameLoaded = GameSettings.LoadSettings() && MathTools.Initialize(seed) && NameRandomizer.Initialize();
 
             /*for (int i = 0; i < 100; i++)

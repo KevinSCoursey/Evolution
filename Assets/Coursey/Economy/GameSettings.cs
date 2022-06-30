@@ -23,6 +23,10 @@ namespace Economy
         public static float SameFactionPriceDiscount = 1.5f;
 
         public static float MinutesGameWillRunFloat = 1f;
+
+
+        public static bool RegenerateSQLiteDBsEachRun = true;
+
         //15 minute recalculation
         //frequency-based occurence of events, worse is less frequent
 
