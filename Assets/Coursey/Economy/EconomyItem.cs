@@ -14,7 +14,7 @@ namespace Economy
         }
         private string _ItemName = string.Empty;
 
-        public string Description
+        public string ItemDescription
         {
             get { return _ItemDescription; }
             set { _ItemDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
@@ -114,6 +114,8 @@ namespace Economy
             get { return _ClassOfItem; }
             set { _ClassOfItem = value; }
         }
+
+        public string itemId;
         private ItemClass _ClassOfItem = ItemClass.Unknown;
 
         public string GetNamesOfFactionsThatSpecializeInThisItem()
@@ -130,7 +132,7 @@ namespace Economy
         {
             return
                 $"Item name: {ItemName} ({ClassOfItem})\n" +
-                $"Item description: {Description}\n" +
+                $"Item description: {ItemDescription}\n" +
                 $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a rarity of {RarityInt}. " +
                 $"Factions that specialize in this item: \n{GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
@@ -138,7 +140,7 @@ namespace Economy
         {
             ClassOfItem = classOfItem;
             ItemName = name;
-            Description = description;
+            ItemDescription = description;
             PurchasePrice = purchasePrice;
             SalePrice = salePrice;
             PriceDefault = priceDefault;
@@ -151,7 +153,7 @@ namespace Economy
         {
             ClassOfItem = classOfItem;
             ItemName = name;
-            Description = description;
+            ItemDescription = description;
             PriceDefault = priceDefault;
             PriceFloor = priceFloor;
             PriceRoof = priceRoof;
@@ -160,9 +162,10 @@ namespace Economy
         }
         public EconomyItem(EconomyItem economyItem)
         {
+            itemId = economyItem.itemId;
             ClassOfItem = economyItem.ClassOfItem;
             ItemName = economyItem.ItemName;
-            Description = economyItem.Description;
+            ItemDescription = economyItem.ItemDescription;
             SalePrice = economyItem.SalePrice;
             PriceDefault = economyItem.PriceDefault;
             PriceFloor = economyItem.PriceFloor;
@@ -176,7 +179,7 @@ namespace Economy
     public interface IEconomyItem
     {
         public string ItemName { get; set; }
-        public string Description { get; set; }
+        public string ItemDescription { get; set; }
         public List<Faction> FactionsThatSpecializeInThisItem { get; set; }
         public int PurchasePrice { get; set; }
         public int SalePrice { get; set; }

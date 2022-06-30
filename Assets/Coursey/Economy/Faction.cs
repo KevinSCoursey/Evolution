@@ -1,3 +1,4 @@
+using Mono.Data.Sqlite;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,7 +10,7 @@ namespace Economy
 
 
         private List<Faction> factions = new();
-
+        public string factionId;
         public string factionName = string.Empty;
         public string factionDescription = string.Empty;
 
@@ -29,6 +30,14 @@ namespace Economy
             this.factionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
             this.factionDescription = string.IsNullOrEmpty(factionDescription) ? "No faction description provided." : factionDescription;
         }
+
+        public Faction(SqliteDataReader rowData)
+        {
+            factionId = rowData["Id"].ToString();
+            factionName = rowData["Name"].ToString();
+            factionDescription = rowData["Description"].ToString();
+        }
+
         /// <summary>
         /// isFriend = true returns allies, false returns enemies
         /// </summary>

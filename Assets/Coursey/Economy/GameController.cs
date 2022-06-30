@@ -23,8 +23,8 @@ namespace Economy
         public int tickCounter = 0;
 
         public static int seed = 0;//8675309;
-        public FactionController factionController;
-        public EconomyController economyController;
+        public static FactionController factionController;
+        public static EconomyController economyController;
         void Start()
         {
             SQLiteData.Initialize();
@@ -41,7 +41,9 @@ namespace Economy
 
             factionController = new FactionController();
             economyController = new EconomyController(factionController);
+            economyController.SaveData();
             factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
+            factionController.SaveData();
             factionController.GenerateRandomTradeRoutes();
 
             Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
@@ -67,8 +69,12 @@ namespace Economy
                 tickCounter++;
 
                 Debug.Log(GameTime.GetGameTimeString());
-                economyController.economyEventController.GameLoop();
-                factionController.GameLoop();
+
+                using (new TimedBlock("EVENT CONTROLLER GAME LOOP"))
+                    economyController.economyEventController.GameLoop();
+
+                using (new TimedBlock("GAME LOOP"))
+                    factionController.GameLoop();
 
                 if (GameTime.GetSecondsRunning() >= (60f * GameSettings.MinutesGameWillRunFloat))
                 {

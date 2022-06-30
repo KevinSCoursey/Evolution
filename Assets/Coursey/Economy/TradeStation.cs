@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
+using System.Data;
+using Mono.Data.Sqlite;
 
 namespace Economy
 {
@@ -19,6 +20,7 @@ namespace Economy
         public int money = 100000;
 
         public Faction associatedFaction;
+        public string factionId;
         //public Dictionary<EconomyItem, int> items = new Dictionary<EconomyItem, int>();//item, price
         //public Dictionary<EconomyItem, int> inventory = new Dictionary<EconomyItem, int>();//item, quantity
         public List<EconomyItem> specializedItems = new();
@@ -37,6 +39,14 @@ namespace Economy
             InitializeInventory();
             CalculateItemDistribution();
             CalculatePriceDistribution();
+        }
+
+        public TradeStation(SqliteDataReader rowData)
+        {
+            factionId = rowData["FactionId"].ToString();
+            tradeStationName = rowData["Name"].ToString();
+            tradeStationDescription = rowData["Description"].ToString();
+            Debug.Log($"---TradeStation---{this.ToString()}");
         }
 
         private void InitializeInventory()
@@ -236,5 +246,9 @@ namespace Economy
                 $"Money: ${money}\n" +
                 $"Items available:{LogItemsAvailable()}";
         }
+
+        #region SQLite
+        //placeholder
+        #endregion SQLite
     }
 }

@@ -17,12 +17,12 @@ namespace Economy
         }
         private string _EventName = string.Empty;
 
-        public string Description
+        public string EventDescription
         {
-            get { return _Description; }
-            set { _Description = string.IsNullOrEmpty(value) ? "No description provided" : value; }
+            get { return _EventDescription; }
+            set { _EventDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
         }
-        private string _Description = string.Empty;
+        private string _EventDescription = string.Empty;
 
         public List<ItemClass> ItemClassesEffectedByEvent
         {
@@ -51,12 +51,12 @@ namespace Economy
         public EconomyEvent(string name, string description)
         {
             EventName = name;
-            Description = description;
+            EventDescription = description;
         }
         public EconomyEvent(string name, string description, List<ItemClass> itemClassesImpactedByEvent, float factor)
         {
             EventName = name;
-            Description = description;
+            EventDescription = description;
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
             this.itemEffectFactor = factor;
         }
@@ -147,7 +147,7 @@ namespace Economy
         {
             return
                 $"Event name: {EventName}\n" +
-                $"Event description: {Description}\n" +
+                $"Event description: {EventDescription}\n" +
                 $"Item classes effected by this event: \n{GetItemClassesImpactedByThisEvent()}\n\n";
         }
     }

@@ -161,9 +161,9 @@ public class BasicSql : IDisposable
         return result;
     }
 
-    public N ExecuteScalar<N>(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
+    public string ExecuteScalar(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
     {
-        N result = default;
+        var result = "";
         using (var command = _connection.CreateCommand())
         {
             command.CommandText = sql;
@@ -175,7 +175,7 @@ public class BasicSql : IDisposable
             {
                 if (reader.Read())
                 {
-                    result = (N)reader[0];
+                    result = reader[0]?.ToString();
                 }
             }
         }
