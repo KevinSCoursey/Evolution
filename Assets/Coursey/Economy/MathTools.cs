@@ -131,30 +131,32 @@ namespace Economy
         public static int CalculateItemPurchasePrice(IEconomyItem economyItem, bool isSpecialized)
         {
             float markupFactor = 1.25f;
+            if (economyItem.MaxQuantityOfItem == 0 || economyItem.rarityInt == 0) return 1;
             int price = isSpecialized
 
-                ? (int)(markupFactor * (economyItem.PriceDefault +
-                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
-                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
+                ? (int)(markupFactor * (economyItem.priceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.rarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.rarityInt)) + economyItem.QuantityOfItem)))
 
-                : (int)(markupFactor * (economyItem.PriceDefault +
-                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
-                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
+                : (int)(markupFactor * (economyItem.priceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.rarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.rarityInt)) + economyItem.QuantityOfItem)));
 
             return price;
         }
         public static int CalculateItemSalePrice(IEconomyItem economyItem, bool isSpecialized)
         {
             float markdownFactor = 0.75f;
+            if (economyItem.MaxQuantityOfItem == 0 || economyItem.rarityInt == 0) return 1;
             int price = isSpecialized
 
-                ? (int)(markdownFactor * (economyItem.PriceDefault +
-                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
-                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)))
+                ? (int)(markdownFactor * (economyItem.priceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.rarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.rarityInt)) + economyItem.QuantityOfItem)))
 
-                : (int)(markdownFactor * (economyItem.PriceDefault +
-                80 * economyItem.MaxQuantityOfItem * economyItem.RarityInt /
-                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.RarityInt)) + economyItem.QuantityOfItem)));
+                : (int)(markdownFactor * (economyItem.priceDefault +
+                80 * economyItem.MaxQuantityOfItem * economyItem.rarityInt /
+                (Mathf.Log(economyItem.QuantityOfItem) * Mathf.Sin(economyItem.QuantityOfItem / (3 * economyItem.rarityInt)) + economyItem.QuantityOfItem)));
 
             while(price >= economyItem.PurchasePrice)
             {

@@ -8,8 +8,6 @@ namespace Economy
     {
         private const bool _debugThisClass = true;
 
-
-        private List<Faction> factions = new();
         public string factionId;
         public string factionName = string.Empty;
         public string factionDescription = string.Empty;
@@ -18,13 +16,6 @@ namespace Economy
         public List<Faction> factionEnemies = new();
         public List<TradeStation> tradeStations = new();
 
-        public Faction(string factionName, string factionDescription, List<Faction> factionAllies, List<Faction> factionEnemies)
-        {
-            this.factionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
-            this.factionDescription = factionDescription == string.Empty || factionDescription == null ? "No faction description provided." : factionDescription;
-            this.factionAllies = factionAllies;
-            this.factionEnemies = factionEnemies;
-        }
         public Faction(string factionName, string factionDescription)
         {
             this.factionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
@@ -38,11 +29,6 @@ namespace Economy
             factionDescription = rowData["Description"].ToString();
         }
 
-        /// <summary>
-        /// isFriend = true returns allies, false returns enemies
-        /// </summary>
-        /// <param name="isFriend"></param>
-        /// <returns></returns>
         public string GetFactionAllianceNames(bool isFriend)
         {
             string returnString = string.Empty;
@@ -66,11 +52,7 @@ namespace Economy
             }
             return returnString;
         }
-        public void UpdateListOfFactions(List<Faction> factions)
-        {
-            this.factions = factions;
-        }
-        public void GenerateRandomTradeStation(List<EconomyItem> economyItems)
+        public void GenerateRandomTradeStation()
         {
             int rand = MathTools.PseudoRandomIntExclusiveMax(GameSettings.MinTradeStationsPerFaction, GameSettings.MaxTradeStationsPerFaction);
 
@@ -80,11 +62,34 @@ namespace Economy
 
             for (int i = 0; i < rand; i++)//In this case, 1 - 10 stations generated
             {
-                TradeStation tradeStationToAdd = new TradeStation(factions, this, economyItems, tradeStationName: NameRandomizer.GenerateUniqueNamev2());
+                TradeStation tradeStationToAdd = new TradeStation(this, tradeStationName: NameRandomizer.GenerateUniqueNamev2());
                 tradeStations.Add(tradeStationToAdd);
 
+                using (var basicSql = new BasicSql())
+                {
+                    /*
+                    basicSql.ExecuteNonReader(@"
+                    INSERT INTO TradeStation (Id INTEGER, FactionId VARCHAR(3), Name VARCHAR(100), Description TEXT)
+                    VALUES ($id, $factionId, $name, $description)
+                    ON CONFLICT(Id) DO UPDATE SET
+                    Id = $id, FactionId = $factionId, Name = $name, Description = $description
+                    ",
+                     * */
+                    basicSql.ExecuteNonReader(@"
+                    UPDATE TradeStation
+                    SET FactionId = $factionId, Name = $name, Description = $description
+                    WHERE Id = $id;
+                    ", new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$id", tradeStationToAdd.tradeStationId),
+                        new KeyValuePair<string, string>("$factionId", tradeStationToAdd.factionId),
+                        new KeyValuePair<string, string>("$name", tradeStationToAdd.tradeStationName),
+                        new KeyValuePair<string, string>("$description", tradeStationToAdd.tradeStationDescription)
+                    });
+                }
+
 #pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
+                    if (_debugThisClass) Debug.Log($"Added a trade station to the {factionName} Faction. Trade Station data is...\n\n{tradeStationToAdd}");
 #pragma warning restore CS0162 // Unreachable code detected
 
             }
@@ -92,6 +97,7 @@ namespace Economy
         public override string ToString()
         {
             return
+                $"Faction Id: {factionId}\n" +
                 $"Faction name: {factionName}\n" +
                 $"Faction description: {factionDescription}\n" +
                 $"Faction allies: {GetFactionAllianceNames(true)}\n" +

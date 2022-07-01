@@ -25,37 +25,41 @@ namespace Economy
         public static int seed = 0;//8675309;
         public static FactionController factionController;
         public static EconomyController economyController;
+        public static EconomyItemController economyItemController;
+        public static EconomyEventController economyEventController;
+        public static TradeStationController tradeStationController;
         void Start()
         {
             SQLiteData.Initialize();
             gameLoaded = GameSettings.LoadSettings() && MathTools.Initialize(seed) && NameRandomizer.Initialize();
-
-            /*for (int i = 0; i < 100; i++)
-            {
-                Debug.Log(NameRandomizer.GenerateUniqueNamev2(NameType.Faction));
-            }*/
-
-#pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass) Debug.Log($"Seed: {seed}");
-#pragma warning restore CS0162 // Unreachable code detected
-
+            DataBaseInteract.ClearDataBase();
+            DataBaseInteract.CreateDataBase();
             factionController = new FactionController();
-            economyController = new EconomyController(factionController);
-            economyController.SaveData();
-            factionController.GenerateRandomTradeStations(economyController.economyItemController.items);
-            factionController.SaveData();
+            economyController = new EconomyController();
+            economyItemController = new EconomyItemController();
+            economyEventController = new EconomyEventController();
+            tradeStationController = new TradeStationController();
+
+            //economyController.SaveData();
+            /*factionController.SaveData();
             factionController.GenerateRandomTradeRoutes();
+            factionController.SaveTradeRouteData();
 
             Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
-            InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
+            InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);*/
         }
+
+        //make all functions get factions etc from sql and make a set of functions to do it easy and rewrite the data (this is getting messy!)
+        //data restructuring - build a faction and all of its trade stations then write to database and clear from memoory
+
+
         public void StopGame()
         {
             gameLoaded = false;
             Debug.Log($"Game has stopped.");
             Application.Quit();
         }
-        public void GameLoop()
+        /*public void GameLoop()
         {
             var start = DateTime.Now;
             if (gameRunning && gameLoaded)
@@ -85,6 +89,6 @@ namespace Economy
                 var elapsed = stop - start;
                 Debug.Log($"One tick took {elapsed.TotalMilliseconds} ms to run.");
             }
-        }
+        }*/
     }
 }

@@ -18,7 +18,7 @@ namespace Economy
             Trade = (Item1, Item2);
             TradeRouteValid = Item1 != null
                 && Item2 != null
-                && Item1?.guid != Item2?.guid
+                //&& Item1?.guid != Item2?.guid
                 && Item1.internalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
                 && Item2.internalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
                 && Item1.externalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation
@@ -28,7 +28,7 @@ namespace Economy
                 ? Item1.associatedFaction == Item2.associatedFaction
                 : false;
 #pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass) Debug.Log($"Guid {Item1?.guid} vs {Item2?.guid}");
+            //if (_debugThisClass) Debug.Log($"Guid {Item1?.guid} vs {Item2?.guid}");
             if (_debugThisClass && InternalTradeRoute && TradeRouteValid)
             {
                 Debug.Log($"Trade route ({Item1.associatedFaction.factionName} <-> {Item1.associatedFaction.factionName}) has been generated between " +
@@ -90,32 +90,32 @@ namespace Economy
                 foreach (EconomyItem item in itemsToTradeItem1)
                 {
                     //no point trading item if they both need it
-                    if(itemsForItem2.Find(_ => _.ItemName == item.ItemName) == null)
+                    if(itemsForItem2.Find(_ => _.itemName == item.itemName) == null)
                     {
                         Trade.Item1.AI_Buy(item, Trade.Item2);
                     }
                     else
                     {
                         Debug.Log($"Both {Trade.Item1.tradeStationName} and {Trade.Item2.tradeStationName} " +
-                            $"need {item.ItemName}, so it wasn't traded.");
+                            $"need {item.itemName}, so it wasn't traded.");
                     }
                 }
                 foreach (EconomyItem item in itemsToTradeItem2)
                 {
                     //no point trading item if they both need it
-                    if (itemsForItem1.Find(_ => _.ItemName == item.ItemName) == null)
+                    if (itemsForItem1.Find(_ => _.itemName == item.itemName) == null)
                     {
                         Trade.Item2.AI_Buy(item, Trade.Item1);
                     }
                     else
                     {
                         Debug.Log($"Both {Trade.Item2.tradeStationName} and {Trade.Item1.tradeStationName} " +
-                            $"need {item.ItemName}, so it wasn't traded.");
+                            $"need {item.itemName}, so it wasn't traded.");
                     }
                 }
             }
         }
-        public bool Equals(TradeRoute tradeRoute)
+       /* public bool Equals(TradeRoute tradeRoute)
         {
             bool duplicate = (Trade.Item1.guid == tradeRoute.Trade.Item1.guid && Trade.Item2.guid == tradeRoute.Trade.Item2.guid)
                           || (Trade.Item2.guid == tradeRoute.Trade.Item1.guid && Trade.Item1.guid == tradeRoute.Trade.Item2.guid);
@@ -124,8 +124,8 @@ namespace Economy
                 Debug.Log($"{tradeRoute} determined to be duplicate.");
             }
             return duplicate;
-        }
-        public static bool Equals(TradeRoute tradeRoute1, TradeRoute tradeRoute2)
+        }*/
+       /* public static bool Equals(TradeRoute tradeRoute1, TradeRoute tradeRoute2)
         {
             bool duplicate = (tradeRoute1.Trade.Item1.guid == tradeRoute2.Trade.Item1.guid && tradeRoute1.Trade.Item2.guid == tradeRoute2.Trade.Item2.guid)
                           || (tradeRoute1.Trade.Item2.guid == tradeRoute2.Trade.Item1.guid && tradeRoute1.Trade.Item1.guid == tradeRoute2.Trade.Item2.guid);
@@ -134,8 +134,8 @@ namespace Economy
                 Debug.Log($"{tradeRoute1} determined to be duplicate.");
             }
             return duplicate;
-        }
-        public static bool CheckIfExists(TradeRoute tradeRoute)
+        }*/
+        /*public static bool CheckIfExists(TradeRoute tradeRoute)
         {
             bool exists = false;
             foreach (TradeRoute tradeRouteParse in EconomyController.AllTradeRoutes)
@@ -146,7 +146,7 @@ namespace Economy
                 }
             }
             return exists;
-        }
+        }*/
         public override string ToString()
         {
             string str = string.Empty;

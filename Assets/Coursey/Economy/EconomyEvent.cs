@@ -11,19 +11,20 @@ namespace Economy
 
         public float itemEffectFactor = 1f;
         public List<Faction> factionsEffected = new();
-        public string EventName
+        public string eventId;
+        public string eventName
         {
-            get { return _EventName; }
-            set { _EventName = string.IsNullOrEmpty(value) ? _EventName = "Unnamed event" : _EventName = value; }
+            get { return _eventName; }
+            set { _eventName = string.IsNullOrEmpty(value) ? _eventName = "Unnamed event" : _eventName = value; }
         }
-        private string _EventName = string.Empty;
+        private string _eventName = string.Empty;
 
-        public string EventDescription
+        public string eventDescription
         {
-            get { return _EventDescription; }
-            set { _EventDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
+            get { return _eventDescription; }
+            set { _eventDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
         }
-        private string _EventDescription = string.Empty;
+        private string _eventDescription = string.Empty;
 
         public List<ItemClass> ItemClassesEffectedByEvent
         {
@@ -52,21 +53,21 @@ namespace Economy
 
         public EconomyEvent(string name, string description)
         {
-            EventName = name;
-            EventDescription = description;
+            eventName = name;
+            eventDescription = description;
         }
         public EconomyEvent(string name, string description, List<ItemClass> itemClassesImpactedByEvent, float factor)
         {
-            EventName = name;
-            EventDescription = description;
+            eventName = name;
+            eventDescription = description;
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
             this.itemEffectFactor = factor;
         }
 
         public EconomyEvent(SqliteDataReader rowData)
         {
-            EventName = rowData["EventName"].ToString();
-            EventDescription = rowData["EventDescription"].ToString();
+            eventName = rowData["EventName"].ToString();
+            eventDescription = rowData["EventDescription"].ToString();
         }
 
         public int TriggerEvent(Faction faction)
@@ -78,13 +79,13 @@ namespace Economy
                 factionsEffected.Add(faction);
                 foreach(TradeStation tradeStation in faction.tradeStations)
                 {
-                    if (!tradeStation.economyEvents.Any(_ => _.EventName == EventName))
+                    if (!tradeStation.economyEvents.Any(_ => _.eventName == eventName))
                     //if (!tradeStation.economyEvents.Contains(this))
                     {
                         tradeStation.economyEvents.Add(this);
                         numTriggered++;
 #pragma warning disable CS0162 // Unreachable code detected
-                        if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on Faction {faction.factionName}!");
+                        if (_debugThisClass) Debug.Log($"The {eventName} Event has been triggered on Faction {faction.factionName}!");
 #pragma warning restore CS0162 // Unreachable code detected
                     }
                 }
@@ -93,13 +94,13 @@ namespace Economy
         }
         public int TriggerEvent(TradeStation tradeStation)
         {
-            if (!tradeStation.economyEvents.Any(_ => _.EventName == EventName))
+            if (!tradeStation.economyEvents.Any(_ => _.eventName == eventName))
             //if (!tradeStation.economyEvents.Contains(this))
             {
                 //do something
                 tradeStation.economyEvents.Add(this);
 #pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"The {EventName} Event has been triggered on {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
+                if (_debugThisClass) Debug.Log($"The {eventName} Event has been triggered on {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
 #pragma warning restore CS0162 // Unreachable code detected
                 return 1;
             }
@@ -124,7 +125,7 @@ namespace Economy
                     }
                 }
 #pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"The {EventName} Event has been concluded for the Faction {faction.factionName}!");
+                if (_debugThisClass) Debug.Log($"The {eventName} Event has been concluded for the Faction {faction.factionName}!");
 #pragma warning restore CS0162 // Unreachable code detected
             }
             return numTriggered;
@@ -136,7 +137,7 @@ namespace Economy
                 //do something
                 tradeStation.economyEvents.Remove(this);
 #pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"The {EventName} Event has been concluded for the Faction {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
+                if (_debugThisClass) Debug.Log($"The {eventName} Event has been concluded for the Faction {tradeStation.associatedFaction.factionName}'s Trade Station {tradeStation.tradeStationName}!");
 #pragma warning restore CS0162 // Unreachable code detected
                 return 1;
             }
@@ -154,8 +155,8 @@ namespace Economy
         public override string ToString()
         {
             return
-                $"Event name: {EventName}\n" +
-                $"Event description: {EventDescription}\n" +
+                $"Event name: {eventName}\n" +
+                $"Event description: {eventDescription}\n" +
                 $"Item classes effected by this event: \n{GetItemClassesImpactedByThisEvent()}\n\n";
         }
     }

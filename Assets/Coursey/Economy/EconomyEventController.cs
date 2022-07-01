@@ -7,7 +7,6 @@ namespace Economy
     public class EconomyEventController
     {
         private const bool _debugThisClass = true;
-        private FactionController factionController;
 
         public List<EconomyEvent> economyEvents = new ();
         public int ConcurrentEvents
@@ -28,58 +27,20 @@ namespace Economy
 #pragma warning restore CS0162 // Unreachable code detected
             }
         }
-        private int _ConcurrentEvents = 0;
 
-        public EconomyEventController(FactionController factionController)
+        private int _ConcurrentEvents = 0;
+        public EconomyEventController()//good
         {
-            this.factionController = factionController;
-            //Initialize();
+            Initialize();
         }
-        public void Initialize()
+
+        public void Initialize()//good
         {
             AddDefaultEconomyEvents();
-
-            //Just makes this not cause a compile warning
-#pragma warning disable CS0162 // Unreachable code detected
-            if (_debugThisClass) LogAllEconomyEvents();
-#pragma warning restore CS0162 // Unreachable code detected
+            LogAllEconomyEvents();
+            DataBaseInteract.UpdateEventData(economyEvents);
         }
-        public void GameLoop()
-        {
-            if (ShouldEventBeTriggered())
-            {
-                ConcurrentEvents += TriggerRandomEvent(factionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
-            }
-            if (ShouldEventBeRemoved())
-            {
-                ConcurrentEvents -= RemoveRandomEvent(factionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
-            }
-        }
-        private bool ShouldEventBeTriggered()
-        {
-            if(MathTools.PseudoRandomIntExclusiveMax(1,1000) <= (int)(GameSettings.EconomyEventChancePerTick * 1000))
-            {
-                return true;
-            }
-            return false;
-        }
-        private bool ShouldEventBeOnWholeFaction()
-        {
-            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventEffectWholeFactionChance * 1000))
-            {
-                return true;
-            }
-            return false;
-        }
-        private bool ShouldEventBeRemoved()
-        {
-            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000) * ConcurrentEvents)
-            {
-                return true;
-            }
-            return false;
-        }
-        public void AddDefaultEconomyEvents()//-------------------------DEFAULT EVENTS
+        public void AddDefaultEconomyEvents()
         {
             //DEFAULT EVENTS
             EconomyEvent eventToAdd = new EconomyEvent(
@@ -121,12 +82,50 @@ namespace Economy
                 factor: 0.45f
                 );
             economyEvents.Add(eventToAdd);
+        }//good
+        public void GameLoop()
+        {
+            if (ShouldEventBeTriggered())
+            {
+                ConcurrentEvents += TriggerRandomEvent(FactionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
+            }
+            if (ShouldEventBeRemoved())
+            {
+                ConcurrentEvents -= RemoveRandomEvent(FactionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
+            }
+        }
+        private bool ShouldEventBeTriggered()
+        {
+            if(MathTools.PseudoRandomIntExclusiveMax(1,1000) <= (int)(GameSettings.EconomyEventChancePerTick * 1000))
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool ShouldEventBeOnWholeFaction()
+        {
+            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventEffectWholeFactionChance * 1000))
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool ShouldEventBeRemoved()
+        {
+            if (MathTools.PseudoRandomIntExclusiveMax(1, 1000) <= (int)(GameSettings.EconomyEventChanceToRemove * 1000) * ConcurrentEvents)
+            {
+                return true;
+            }
+            return false;
         }
         public void LogAllEconomyEvents()
         {
-            foreach(var eEvent in economyEvents)
+            if (_debugThisClass)
             {
-                Debug.Log($"Added the following event to the economy...\n\n{eEvent}");
+                foreach (var eEvent in economyEvents)
+                {
+                    Debug.Log($"Added the following event to the economy...\n\n{eEvent}");
+                }
             }
         }
         public int TriggerRandomEvent(Faction faction, bool impactEntireFaction = false)

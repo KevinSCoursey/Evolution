@@ -122,4 +122,43 @@ namespace Economy
         }
     }
 
+    public class TimedBlock : IDisposable
+    {
+        private bool disposedValue;
+        private bool _debugThisClass;
+        private string _blockName;
+        private DateTime _start;
+
+        public TimedBlock(string blockName, bool debugThisClass = false)
+        {
+            _blockName = blockName;
+            _start = DateTime.Now;
+            _debugThisClass = debugThisClass;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_debugThisClass)
+            {
+                var stop = DateTime.Now;
+                var span = stop - _start;
+                Debug.Log($"{_blockName} took {span.TotalMilliseconds} ms");
+            }
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
+
 }

@@ -8,23 +8,15 @@ namespace Economy
 {
     public class EconomyController
     {
-        private FactionController factionController;
-        private List<Faction> factions;
-
-        public EconomyItemController economyItemController;
-        public EconomyEventController economyEventController;
-        public static List<TradeRoute> AllTradeRoutes = new List<TradeRoute>();
-
-        public EconomyController(FactionController factionController)
+        public EconomyController()
         {
-            this.factionController = factionController;
-            factions = factionController.factions;
-            economyItemController = new EconomyItemController(factions);
-            economyEventController = new EconomyEventController(factionController);
             Initialize();
         }
+        public void Initialize()
+        {
 
-        public static bool DoesTradeRouteExist(TradeRoute tradeRoute)
+        }
+        /*public static bool DoesTradeRouteExist(TradeRoute tradeRoute)
         {
             if (AllTradeRoutes.Count == 0 || tradeRoute == null) return false;
             foreach(var tradeRouteParse in AllTradeRoutes)
@@ -32,15 +24,11 @@ namespace Economy
                 if(tradeRouteParse.Equals(tradeRoute)) return true;
             }
             return false;
-        }
+        }*/
         
-        public void Initialize()
-        {
-            economyItemController.Initialize();
-            economyEventController.Initialize();
-        }
+        
 
-        #region SQLite
+        /*#region SQLite
         public void SaveData()
         {
             using (var basicSql = new BasicSql())
@@ -70,7 +58,7 @@ namespace Economy
                     string itemName = basicSql.ExecuteScalar(@"SELECT ItemName FROM EconomyItem WHERE ItemName = $itemName;",
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$itemName", economyItem.ItemName)
+                            new KeyValuePair<string, string>("$itemName", economyItem.itemName)
                         }
                     );
 
@@ -80,13 +68,13 @@ namespace Economy
                             "INSERT INTO EconomyItem (ItemName, ItemDescription, ItemClassId, RarityInt, PriceDefault, PriceFloor, PriceRoof) VALUES ($itemName, $itemDescription, $itemClassId, $rarityInt, $priceDefault, $priceFloor, $priceRoof)",
                             new List<KeyValuePair<string, string>>
                             {
-                                new KeyValuePair<string, string>("$itemName", economyItem.ItemName),
-                                new KeyValuePair<string, string>("$itemDescription", economyItem.ItemDescription),
-                                new KeyValuePair<string, string>("$itemClassId", ((int)economyItem.ClassOfItem).ToString()),
-                                new KeyValuePair<string, string>("$rarityInt", economyItem.RarityInt.ToString()),
-                                new KeyValuePair<string, string>("$priceDefault", economyItem.PriceDefault.ToString()),
-                                new KeyValuePair<string, string>("$priceFloor", economyItem.PriceFloor.ToString()),
-                                new KeyValuePair<string, string>("$priceRoof", economyItem.PriceRoof.ToString())
+                                new KeyValuePair<string, string>("$itemName", economyItem.itemName),
+                                new KeyValuePair<string, string>("$itemDescription", economyItem.itemDescription),
+                                new KeyValuePair<string, string>("$itemClassId", ((int)economyItem.itemClass).ToString()),
+                                new KeyValuePair<string, string>("$rarityInt", economyItem.rarityInt.ToString()),
+                                new KeyValuePair<string, string>("$priceDefault", economyItem.priceDefault.ToString()),
+                                new KeyValuePair<string, string>("$priceFloor", economyItem.priceFloor.ToString()),
+                                new KeyValuePair<string, string>("$priceRoof", economyItem.priceRoof.ToString())
                             }
                             );
                     }
@@ -99,7 +87,7 @@ namespace Economy
                             ? basicSql.ExecuteScalar(@"SELECT Id FROM EconomyItem WHERE ItemName = $itemName",
                             new List<KeyValuePair<string, string>>
                             {
-                                    new KeyValuePair<string, string>("$itemName", item.ItemName)
+                                    new KeyValuePair<string, string>("$itemName", item.itemName)
                             })
                             : item.itemId;
                 }
@@ -109,7 +97,7 @@ namespace Economy
                     string eventName = basicSql.ExecuteScalar(@"SELECT EventName FROM EconomyEvent WHERE EventName = $eventName;",
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$eventName", economyEvent.EventName)
+                            new KeyValuePair<string, string>("$eventName", economyEvent.eventName)
                         }
                     );
 
@@ -117,11 +105,11 @@ namespace Economy
                     {
                         basicSql.ExecuteNonReader(
                             "INSERT INTO EconomyEvent (EventName, EventDescription) VALUES ($eventName, $eventDescription)",
-                            new List<KeyValuePair<string, string>>/*, $itemClassesEffected*/
+                            new List<KeyValuePair<string, string>>*//*, $itemClassesEffected*//*
                             {
                                 //todo//new KeyValuePair<string, string>("$itemClassesEffected", economyEvent.eventId),
-                                new KeyValuePair<string, string>("$eventName", economyEvent.EventName),
-                                new KeyValuePair<string, string>("$eventDescription", economyEvent.EventDescription)
+                                new KeyValuePair<string, string>("$eventName", economyEvent.eventName),
+                                new KeyValuePair<string, string>("$eventDescription", economyEvent.eventDescription)
                             }
                             );
                     }
@@ -133,7 +121,7 @@ namespace Economy
                     string eventId = basicSql.ExecuteScalar(@"SELECT Id FROM EconomyEvent WHERE EventName = $eventName;",
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$eventName", economyEvent.EventName)
+                            new KeyValuePair<string, string>("$eventName", economyEvent.eventName)
                         }
                     );
                     foreach(var itemClassId in economyEvent.ItemClassesEffectedByEvent)
@@ -164,6 +152,6 @@ namespace Economy
                 }
             }
         }
-        #endregion SQLite
+        #endregion SQLite*/
     }
 }

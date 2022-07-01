@@ -7,61 +7,11 @@ using System;
 
 namespace Economy
 {
-    public class TimedBlock : IDisposable
-    {
-        private bool disposedValue;
-        private string _blockName;
-        private DateTime _start;
-
-        public TimedBlock(string blockName)
-        {
-            _blockName = blockName;
-            _start = DateTime.Now;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~TimedBlock()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            var stop = DateTime.Now;
-            var span = stop - _start;
-            Debug.Log($"{_blockName} took {span.TotalMilliseconds} ms");
-
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-    }
-
     public class FactionController
     {
         private const bool _debugThisClass = true;
-
-        public List<Faction> factions = new();
-
         private List<string> factionNames = new List<string>
         {
-            //DEFAULT FACTIONS
             "Humans",
             "The Zerg",
             "PlaceholderFac1",
@@ -78,110 +28,154 @@ namespace Economy
             string.Empty,
             "OH GOD RUUUUUUN!!!!"
         };
-        public FactionController()
+
+        public static List<Faction> factions { get ; private set; } = new();
+        public FactionController()//good
         {
             Initialize();
         }
-        public void Initialize()
+        public void Initialize()//good
         {
-            AddDefaultFactions();
-            //SaveData();
-        }
-        public void GameLoop()
-        {
-            Faction newFaction = null;
-            using (var basicSql = new BasicSql())
+            using (new TimedBlock("Adding default factions", _debugThisClass))
             {
-                using (new TimedBlock("Factions"))
-                {
-                    basicSql.ExecuteReader(@"SELECT * FROM Faction WHERE IsDisabled = $isDisabled", new List<KeyValuePair<string, string>>{
-                    new KeyValuePair<string, string>("$isDisabled","False")
-                }, (rowDataFac) =>
-                    {
-                        newFaction = new Faction(rowDataFac);
-                    });
-                }
-
-                using (new TimedBlock("TradeStation"))
-                {
-                    basicSql.ExecuteReader(@"SELECT * FROM TradeStation WHERE FactionId = $factionId", new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>("$factionId", newFaction.factionId)
-                    }, (rowDataTS) =>
-                    {
-                        newFaction.tradeStations.Add(new TradeStation(rowDataTS));
-                    });
-                }
-
-                foreach(var tradeStation in newFaction.tradeStations)
-                {
-                    
-
-                    //build inventory
-                    List<EconomyItem> inventoryItems = new();
-                    basicSql.ExecuteReader(@"SELECT * FROM TradeStationInventory WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>("$tradeStationId", tradeStation.tradeStationId)
-                    }, (rowDataItem) =>
-                    {
-                        inventoryItems.Add(new EconomyItem(rowDataItem));
-                    });
-                   
-                    using (new TimedBlock("UseItems"))
-                        tradeStation.UseItems();
-
-                    using (new TimedBlock("ProduceItems"))
-                        tradeStation.ProduceItems();
-
-                    using (new TimedBlock("CalculatePriceDistribution"))
-                        tradeStation.CalculatePriceDistribution();
-
-                    using (new TimedBlock("ExecuteAllTrades"))
-                        tradeStation.ExecuteAllTrades();
-
-#pragma warning disable CS0162 // Unreachable code detected
-                    if (_debugThisClass) Debug.Log($"{tradeStation}");
-#pragma warning restore CS0162 // Unreachable code detected
-                }
+                AddDefaultFactions();
             }
         }
         private void AddDefaultFactions()
         {
-            while (factionNames.Count > factionDescriptions.Count)
+            //ensure same quantity of names and descriptions for faction generation, even if that means having empty strings
+            if(factionNames.Count > factionDescriptions.Count)
             {
-                factionDescriptions.Add(string.Empty);
+                while (factionNames.Count > factionDescriptions.Count)
+                {
+                    factionDescriptions.Add(string.Empty);
+                }
             }
+            if(factionDescriptions.Count > factionNames.Count)
+            {
+                while(factionDescriptions.Count > factionNames.Count)
+                {
+                    factionNames.Add(string.Empty);
+                }
+            }
+
+            //build factions and add to database if they dont exist
             for (int i = 0; i < factionNames.Count; i++)
             {
                 Faction faction = new Faction(factionNames[i], factionDescriptions[i]);
                 factions.Add(faction);
-
-#pragma warning disable CS0162 // Unreachable code detected
-                if (_debugThisClass) Debug.Log($"Added the following faction...\n\n{faction}");
-#pragma warning restore CS0162 // Unreachable code detected
-
             }
-            foreach (Faction faction in factions)
+            LogAllFactions();
+            DataBaseInteract.UpdateFactionData(factions);
+        }//good
+        public void GameLoop()
+        {
+            /* Trial 1 - save factions in memory and regenerate trade stations
+             * 
+             */
+            using (var basicSql = new BasicSql())
             {
-                faction.UpdateListOfFactions(factions);
+                List<Faction> newFactions = new List<Faction>();
+
+                //build factions that arent disabled
+                basicSql.ExecuteReader(@"SELECT * FROM Faction WHERE IsDisabled = $isDisabled", new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("$isDisabled","False")
+                }, (rowDataFac) =>
+                {
+                    newFactions.Add(new Faction(rowDataFac));
+                });
+
+                //build trade stations for each faction that belong to that faction
+                foreach (var faction in newFactions)
+                {
+                    basicSql.ExecuteReader(@"SELECT * FROM TradeStation WHERE FactionId = $factionId", new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$factionId", faction.factionId)
+                    }, (rowDataTradeStation) =>
+                    {
+                        TradeStation newTradeStation = new TradeStation(rowDataTradeStation);
+                        faction.tradeStations.Add(newTradeStation);
+
+                        //build trade station inventory (NESTED)
+                        basicSql.ExecuteReader(@"SELECT * FROM TradeStationInventory WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.tradeStationId)
+                        }, (rowDataTradeStationInventory) =>
+                        {
+                            newTradeStation.inventoryItems.Add(new EconomyItem(rowDataTradeStationInventory));
+                        });
+
+                        //build economy events (NESTED)
+                        basicSql.ExecuteReader(@"SELECT * FROM EconomyEventTradeStationLink WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.tradeStationId)
+                        }, (rowData) =>
+                        {
+                            newTradeStation.economyEvents.Add(new EconomyEvent(rowData));
+                        });
+
+                        //perform trade station operations (NESTED)
+                        newTradeStation.UseItems();
+                        newTradeStation.ProduceItems();
+                        newTradeStation.CalculatePriceDistribution();
+                        newTradeStation.ExecuteAllTrades();
+#pragma warning disable CS0162 // Unreachable code detected
+                        if (_debugThisClass) Debug.Log($"{newTradeStation}");
+#pragma warning restore CS0162 // Unreachable code detected
+                    });
+
+                    //build inventory of each trade station
+                    // nested speed = 
+                    // inside trade station speed =
+                    //just done here speed =
+
+                    /*foreach (var tradeStation in faction.tradeStations)
+                    {
+                        basicSql.ExecuteReader(@"SELECT * FROM TradeStationInventory WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$tradeStationId", tradeStation.tradeStationId)
+                    }, (rowDataItem) =>
+                    {
+                        tradeStation.inventoryItems.Add(new EconomyItem(rowDataItem));
+                    });*/
+
+
+                    /*basicSql.ExecuteReader(@"SELECT * FROM EconomyEventTradeStationLink WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                {
+                    new KeyValuePair<string, string>("$tradeStationId", tradeStation.tradeStationId)
+                }, (rowData) =>
+                {
+                    tradeStation.economyEvents.Add(new EconomyEvent(rowData));
+                }); ;*/
+
+                    /*tradeStation.UseItems();
+                    tradeStation.ProduceItems();
+                    tradeStation.CalculatePriceDistribution();
+                    tradeStation.ExecuteAllTrades();*/
+
+                    /*#pragma warning disable CS0162 // Unreachable code detected
+                                            if (_debugThisClass) Debug.Log($"{tradeStation}");
+                    #pragma warning restore CS0162 // Unreachable code detected*/
+                }
             }
         }
         public void GenerateRandomTradeStations(List<EconomyItem> economyItems)
         {
             foreach (Faction faction in factions)
             {
-                faction.GenerateRandomTradeStation(economyItems);
+                faction.GenerateRandomTradeStation(/*economyItems*/);
             }
         }
-        public void GenerateRandomTradeRoutes()
+        /*public void GenerateRandomTradeRoutes()
         {
             foreach (var faction in factions)
             {
                 EstablishTradeRoutes(faction);
             }
 
-        }
-        public void EstablishTradeRoutes(Faction fac)
+        }*/
+        /*public void EstablishTradeRoutes(Faction fac)
         {
             foreach (TradeStation tradeStation in fac.tradeStations)
             {
@@ -205,7 +199,7 @@ namespace Economy
                     }
                 }
             }
-        }
+        }*/
         public TradeRoute GenerateRandomInternalTradeRoute(TradeStation tradeStation)
         {
             if (tradeStation == null)
@@ -265,7 +259,7 @@ namespace Economy
                 ? tradeRoute
                 : null;
         }
-        public Faction GetRandomFaction(int attempt = 0)
+        public static Faction GetRandomFaction(int attempt = 0)
         {
             Debug.Log($"Getting random faction... #fac = {factions.Count}");
             if (attempt >= GameSettings.MaxAttemptsToGenerateSomething)
@@ -275,7 +269,7 @@ namespace Economy
             }
             return factions[MathTools.PseudoRandomIntExclusiveMax(0, factions.Count)];
         }
-        public Faction GetRandomFactionExcludingThisOne(Faction exclude)
+        public static Faction GetRandomFactionExcludingThisOne(Faction exclude)
         {
             //broken
             Faction faction = null; 
@@ -292,19 +286,6 @@ namespace Economy
                 ? null
                 : faction;
         }
-        /*        public TradeStation GetRandomTradeStation()
-                {
-                    var fac = GetRandomFaction();
-                    Debug.Log($"Getting random trade station... #tradestations = {fac.tradeStations.Count}");
-                    if (fac.tradeStations.Count == 0) return null;
-                    return fac.tradeStations[MathTools.PseudoRandomIntExclusiveMax(0, fac.tradeStations.Count)];
-                }*/
-        /*public TradeStation GetRandomTradeStation(Faction faction)
-        {
-            return faction.tradeStations.Count > 1
-                ? faction.tradeStations[MathTools.PseudoRandomIntExclusiveMax(0, faction.tradeStations.Count)]
-                : faction.tradeStations[0];
-        }*/
         public TradeStation GetRandomTradeStation(string factionId)
         {
             List<TradeStation> factionTradeStations = new();
@@ -340,7 +321,16 @@ namespace Economy
                 ? null
                 : tradeStation;
         }
-
+        public void LogAllFactions()
+        {
+            if (_debugThisClass)
+            {
+                foreach(var faction in factions)
+                {
+                    Debug.Log($"Added the following faction...\n\n{faction}");
+                }
+            }
+        }
 
         #region SQLite
         public void SaveData()
@@ -353,86 +343,64 @@ namespace Economy
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStation");
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStationInventory");
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS EconomyEventTradeStationLink");
+                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeRoute");
                 }
+                #region Define SqliteTables
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS Faction (Id INTEGER PRIMARY KEY, Name VARCHAR(100), Description TEXT, IsDisabled INTEGER);
                 ");
-
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS TradeStation (Id INTEGER PRIMARY KEY, FactionId VARCHAR(3), Name VARCHAR(100), Description TEXT);
                 ");
-
-                //NYI, reputation scale 0 - 100 0 = hostile 50 = neutral 75 = friendly
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS FactionLinks (Id INTEGER PRIMARY KEY, FacID1 VARCHAR(3), FacID2 VARCHAR(3), Reputation INTEGER);
                 ");
-
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS TradeStationInventory (Id INTEGER PRIMARY KEY, TradeStationId VARCHAR(3), ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER, IsSpecialized INTEGER);
                 ");
-
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS EconomyEventTradeStationLink (Id INTEGER PRIMARY KEY, EventId VARCHAR(3), TradeStationId VARCHAR(3));
                 ");
+                #endregion
 
                 foreach (var faction in factions)
                 {
-                    string name = basicSql.ExecuteScalar(@"SELECT Name FROM Faction WHERE Name = $name;",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$name", faction.factionName)
-                        }
-                    );
-
-                    
-
-                    /*faction.factionId = basicSql.ExecuteScalar<string>(@"SELECT Id FROM Factions WHERE Name = $name;",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$name", faction.factionName)
-                        }
-                     );*/
-
-                    if (string.IsNullOrEmpty(name))
+                    //check if faction exists with name and add if it doesnt
+                    string nameFac = basicSql.ExecuteScalar(@"
+                    SELECT Name FROM Faction WHERE Name = $name;",
+                    new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$name", faction.factionName)
+                    });
+                    if (string.IsNullOrEmpty(nameFac))
                     {
                         basicSql.ExecuteNonReader(
-                            "INSERT INTO Faction (Name, Description, IsDisabled) VALUES ($name, $description, $isDisabled)",
-                            new List<KeyValuePair<string, string>>
-                            {
-                                new KeyValuePair<string, string>("$name", faction.factionName),
-                                new KeyValuePair<string, string>("$description", faction.factionDescription),
-                                new KeyValuePair<string, string>("$isDisabled", "False"),
-                            }
-                            );
-                    }
-
-                    string factionId = basicSql.ExecuteScalar(@"SELECT Id FROM Faction WHERE Name = $name;",
+                        "INSERT INTO Faction (Name, Description, IsDisabled) VALUES ($name, $description, $isDisabled)",
                         new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$name", faction.factionName)
-                        }
-                    );
+                            new KeyValuePair<string, string>("$name", faction.factionName),
+                            new KeyValuePair<string, string>("$description", faction.factionDescription),
+                            new KeyValuePair<string, string>("$isDisabled", "False"),
+                        });
+                    }
+
+                    //asign factionid to all factions
+                    string factionId = basicSql.ExecuteScalar(@"
+                    SELECT Id FROM Faction WHERE Name = $name;",
+                    new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$name", faction.factionName)
+                    });
 
                     foreach (var tradeStation in faction.tradeStations)
                     {
-                        string nameTS = basicSql.ExecuteScalar(
-                        @"SELECT Name FROM TradeStation WHERE Name = $name;",
+                        //check if trade station exists in database with name and add if it doesnt
+                        string nameTS = basicSql.ExecuteScalar(@"
+                        SELECT Name FROM TradeStation WHERE Name = $name;",
                         new List<KeyValuePair<string, string>>
                         {
                             new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
                         });
-
-
-                        tradeStation.tradeStationId = string.IsNullOrEmpty(tradeStation.tradeStationId)
-                                ? basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name",
-                                new List<KeyValuePair<string, string>>
-                                {
-                                new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
-                                })
-                                : tradeStation.tradeStationId;
-
-
-
                         if (string.IsNullOrEmpty(nameTS))
                         {
                             basicSql.ExecuteNonReader(
@@ -444,30 +412,28 @@ namespace Economy
                                 new KeyValuePair<string, string>("$description", tradeStation.tradeStationDescription)
                             });
                         }
-                    }
 
-                    foreach (var tradeStation in faction.tradeStations)
-                    {
+                        //assign id to tradestation if it doesnt have one
+                        tradeStation.tradeStationId = string.IsNullOrEmpty(tradeStation.tradeStationId)
+                        ? basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name",
+                        new List<KeyValuePair<string, string>>
+                        {
+                        new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
+                        })
+                        : tradeStation.tradeStationId;
+
+                        //add trade station inventory to database
                         List<object[]> data = new List<object[]>();
-                        string tradeStationId = basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name;",
-                            new List<KeyValuePair<string, string>>
-                            {
-                            new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
-                            }
-                        );
                         foreach (var item in tradeStation.inventoryItems)
                         {
-                            object[] obj = { tradeStationId, item.itemId, item.MaxQuantityOfItem, item.PurchasePrice, item.SalePrice, item.IsSpecialized};//ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER);
-                            data.Add(obj);
+                            data.Add(new object[] { tradeStation.tradeStationId, item.itemId, item.MaxQuantityOfItem, item.PurchasePrice, item.SalePrice, item.IsSpecialized });
                         }
-
                         var prams = new List<KeyValuePair<string, string>>();
                         var sql = @"
-                            INSERT INTO	TradeStationInventory
-                            (TradeStationId, ItemId, MaxQuantityOfItem, PurchasePrice, SalePrice, IsSpecialized)
-                            VALUES
-                            ";
-
+                        INSERT INTO	TradeStationInventory
+                        (TradeStationId, ItemId, MaxQuantityOfItem, PurchasePrice, SalePrice, IsSpecialized)
+                        VALUES
+                        ";
                         var idx = 0;
                         foreach (var obj in data)
                         {
@@ -481,12 +447,54 @@ namespace Economy
                             prams.Add(new KeyValuePair<string, string>($"$isSpecialized{idx}", obj[5].ToString()));
                             idx++;
                         }
-                        basicSql.ExecuteNonReader(sql, prams);
-
+                        basicSql.ExecuteNonReader(sql + ";", prams);
                     }
                 }
             }
         }
+        /*public void SaveTradeRouteData()
+        {
+            using (var basicSql = new BasicSql())
+            {
+                if (GameSettings.RegenerateSQLiteDBsEachRun)
+                {
+                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeRoute");
+                }
+
+                basicSql.ExecuteNonReader(@"
+                CREATE TABLE IF NOT EXISTS TradeRoute (Id INTEGER PRIMARY KEY, TradeStationId1 VARCHAR(3), TradeStationId2 VARCHAR(3));
+                ");
+
+                foreach(var tradeRoute in EconomyController.AllTradeRoutes)
+                {
+                    string item1 = basicSql.ExecuteScalar(@"SELECT TradeStationId1 FROM TradeRoute WHERE TradeStationId1 = $id1;",
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("$id1", tradeRoute.Trade.Item1.tradeStationId)
+                        }
+                    );
+
+                    string item2 = basicSql.ExecuteScalar(@"SELECT TradeStationId2 FROM TradeRoute WHERE TradeStationId2 = $id2;",
+                        new List<KeyValuePair<string, string>>
+                        {
+                            new KeyValuePair<string, string>("$id2", tradeRoute.Trade.Item2.tradeStationId)
+                        }
+                    );
+
+                    if (string.IsNullOrEmpty(item1) || string.IsNullOrEmpty(item2))
+                    {
+                        basicSql.ExecuteNonReader(
+                            "INSERT INTO TradeRoute (TradeStationId1, TradeStationId2) VALUES ($id1, $id2)",
+                            new List<KeyValuePair<string, string>>
+                            {
+                                new KeyValuePair<string, string>("$id1", tradeRoute.Trade.Item1.tradeStationId),
+                                new KeyValuePair<string, string>("$id2", tradeRoute.Trade.Item2.tradeStationId)
+                            }
+                            );
+                    }
+                }
+            }
+        }*/
         #endregion SQLite
     }
 }
