@@ -90,6 +90,10 @@ public class BasicSql : IDisposable
 
     public void ExecuteNonReader(string sql)
     {
+        if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
+        {
+            OpenConnection();
+        }
         using (var command = _connection.CreateCommand())
         {
             command.CommandText = sql;
@@ -127,6 +131,10 @@ public class BasicSql : IDisposable
 
     public void ExecuteReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters, Action<SqliteDataReader> rowAction)
     {
+        if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
+        {
+            OpenConnection();
+        }
         using (var command = _connection.CreateCommand())
         {
             command.CommandText = sql;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using Mono.Data.Sqlite;
 
 namespace Economy
 {
@@ -31,6 +32,7 @@ namespace Economy
             }
         }
         private List<Faction> _FactionsThatSpecializeInThisItem = new();
+        public bool IsSpecialized = false;
 
         public int PurchasePrice
         {
@@ -117,6 +119,7 @@ namespace Economy
 
         public string itemId;
         private ItemClass _ClassOfItem = ItemClass.Unknown;
+        private SqliteDataReader rowDataTS;
 
         public string GetNamesOfFactionsThatSpecializeInThisItem()
         {
@@ -163,6 +166,7 @@ namespace Economy
         public EconomyItem(EconomyItem economyItem)
         {
             itemId = economyItem.itemId;
+            IsSpecialized = economyItem.IsSpecialized;
             ClassOfItem = economyItem.ClassOfItem;
             ItemName = economyItem.ItemName;
             ItemDescription = economyItem.ItemDescription;
@@ -174,6 +178,15 @@ namespace Economy
             RarityInt = economyItem.RarityInt;
             FactionsThatSpecializeInThisItem = economyItem.FactionsThatSpecializeInThisItem;
             MaxQuantityOfItem = economyItem.MaxQuantityOfItem;
+        }
+
+        public EconomyItem(SqliteDataReader rowData)
+        {
+            itemId = rowData["ItemId"].ToString();
+            MaxQuantityOfItem = int.Parse(rowData["MaxQuantityOfItem"].ToString());
+            PurchasePrice = int.Parse(rowData["PurchasePrice"].ToString());
+            SalePrice = int.Parse(rowData["SalePrice"].ToString());
+            IsSpecialized = rowData["IsSpecialized"].ToString().Equals("True");
         }
     }
     public interface IEconomyItem

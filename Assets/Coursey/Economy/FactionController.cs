@@ -115,6 +115,18 @@ namespace Economy
 
                 foreach(var tradeStation in newFaction.tradeStations)
                 {
+                    
+
+                    //build inventory
+                    List<EconomyItem> inventoryItems = new();
+                    basicSql.ExecuteReader(@"SELECT * FROM TradeStationInventory WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>("$tradeStationId", tradeStation.tradeStationId)
+                    }, (rowDataItem) =>
+                    {
+                        inventoryItems.Add(new EconomyItem(rowDataItem));
+                    });
+                   
                     using (new TimedBlock("UseItems"))
                         tradeStation.UseItems();
 
@@ -132,20 +144,6 @@ namespace Economy
 #pragma warning restore CS0162 // Unreachable code detected
                 }
             }
-            /*foreach (Faction faction in factions)
-            {
-                foreach (TradeStation tradeStation in faction.tradeStations)
-                {
-                    tradeStation.UseItems();
-                    tradeStation.ProduceItems();
-                    tradeStation.CalculatePriceDistribution();
-                    tradeStation.ExecuteAllTrades();
-
-#pragma warning disable CS0162 // Unreachable code detected
-                    if (_debugThisClass) Debug.Log($"{tradeStation}");
-#pragma warning restore CS0162 // Unreachable code detected
-                }
-            }*/
         }
         private void AddDefaultFactions()
         {
@@ -354,6 +352,7 @@ namespace Economy
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS Faction");
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStation");
                     basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStationInventory");
+                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS EconomyEventTradeStationLink");
                 }
                 basicSql.ExecuteNonReader(@"
                 CREATE TABLE IF NOT EXISTS Faction (Id INTEGER PRIMARY KEY, Name VARCHAR(100), Description TEXT, IsDisabled INTEGER);
@@ -369,7 +368,11 @@ namespace Economy
                 ");
 
                 basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS TradeStationInventory (Id INTEGER PRIMARY KEY, TradeStationId VARCHAR(3), ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER);
+                CREATE TABLE IF NOT EXISTS TradeStationInventory (Id INTEGER PRIMARY KEY, TradeStationId VARCHAR(3), ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER, IsSpecialized INTEGER);
+                ");
+
+                basicSql.ExecuteNonReader(@"
+                CREATE TABLE IF NOT EXISTS EconomyEventTradeStationLink (Id INTEGER PRIMARY KEY, EventId VARCHAR(3), TradeStationId VARCHAR(3));
                 ");
 
                 foreach (var faction in factions)
@@ -419,6 +422,17 @@ namespace Economy
                             new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
                         });
 
+
+                        tradeStation.tradeStationId = string.IsNullOrEmpty(tradeStation.tradeStationId)
+                                ? basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name",
+                                new List<KeyValuePair<string, string>>
+                                {
+                                new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
+                                })
+                                : tradeStation.tradeStationId;
+
+
+
                         if (string.IsNullOrEmpty(nameTS))
                         {
                             basicSql.ExecuteNonReader(
@@ -443,14 +457,14 @@ namespace Economy
                         );
                         foreach (var item in tradeStation.inventoryItems)
                         {
-                            object[] obj = { tradeStationId, item.itemId, item.MaxQuantityOfItem, item.PurchasePrice, item.SalePrice};//ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER);
+                            object[] obj = { tradeStationId, item.itemId, item.MaxQuantityOfItem, item.PurchasePrice, item.SalePrice, item.IsSpecialized};//ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER);
                             data.Add(obj);
                         }
 
                         var prams = new List<KeyValuePair<string, string>>();
                         var sql = @"
                             INSERT INTO	TradeStationInventory
-                            (TradeStationId, ItemId, MaxQuantityOfItem, PurchasePrice, SalePrice)
+                            (TradeStationId, ItemId, MaxQuantityOfItem, PurchasePrice, SalePrice, IsSpecialized)
                             VALUES
                             ";
 
@@ -458,12 +472,13 @@ namespace Economy
                         foreach (var obj in data)
                         {
                             sql += idx > 0 ? "," : "";
-                            sql += $"($tradeStationId{idx},$itemId{idx},$maxQuantityOfItem{idx},$purchasePrice{idx},$salePrice{idx})";
+                            sql += $"($tradeStationId{idx},$itemId{idx},$maxQuantityOfItem{idx},$purchasePrice{idx},$salePrice{idx},$isSpecialized{idx})";
                             prams.Add(new KeyValuePair<string, string>($"$tradeStationId{idx}", obj[0].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$itemId{idx}", obj[1].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$maxQuantityOfItem{idx}", obj[2].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$purchasePrice{idx}", obj[3].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$salePrice{idx}", obj[4].ToString()));
+                            prams.Add(new KeyValuePair<string, string>($"$isSpecialized{idx}", obj[5].ToString()));
                             idx++;
                         }
                         basicSql.ExecuteNonReader(sql, prams);

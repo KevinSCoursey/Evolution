@@ -21,6 +21,7 @@ namespace Economy
 
         public Faction associatedFaction;
         public string factionId;
+        public string tradeStationId;
         //public Dictionary<EconomyItem, int> items = new Dictionary<EconomyItem, int>();//item, price
         //public Dictionary<EconomyItem, int> inventory = new Dictionary<EconomyItem, int>();//item, quantity
         public List<EconomyItem> specializedItems = new();
@@ -211,21 +212,33 @@ namespace Economy
         }
         public void UseItems()
         {
-            //use specialized items as reference but change inventory itself
-            foreach (IEconomyItem item in specializedItems)
+            using (new TimedBlock("TradeStationInventoryUseItems"))
             {
-                float factor = 1f;
-                foreach (EconomyEvent eEvent in economyEvents)
+                using (var basicSql = new BasicSql())
                 {
-                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.ClassOfItem) && eEvent.itemEffectFactor < 1)
-                    {
-                        factor *= eEvent.itemEffectFactor;
-                    }
+                    List<EconomyEvent> economyEvents = new();
+                    basicSql.ExecuteReader(@"SELECT * FROM EconomyEventTradeStationLink WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
+                            {
+                                new KeyValuePair<string, string>("$tradeStationId", tradeStationId)
+                            }, (rowData) =>
+                            {
+                                economyEvents.Add(new EconomyEvent(rowData));
+                            }); ;
                 }
-                var referenceToInventoryItem = inventoryItems.Find(_ => _.ItemName == item.ItemName);
-                referenceToInventoryItem.QuantityOfItem = (int)(factor *
-                    (referenceToInventoryItem.QuantityOfItem - GameSettings.AverageEconomyItemsProducedPerTick -
-                    MathTools.PseudoRandomIntExclusiveMax(1 * referenceToInventoryItem.RarityInt, 5 * referenceToInventoryItem.RarityInt)));
+                foreach (var item in inventoryItems)
+                {
+                    float factor = 1f;
+                    foreach (var eEvent in economyEvents)
+                    {
+                        if (eEvent.ItemClassesEffectedByEvent.Contains(item.ClassOfItem) && eEvent.itemEffectFactor < 1)
+                        {
+                            factor *= eEvent.itemEffectFactor;
+                        }
+                    }
+                    item.QuantityOfItem = (int)(factor *
+                    (item.QuantityOfItem - GameSettings.AverageEconomyItemsProducedPerTick -
+                    MathTools.PseudoRandomIntExclusiveMax(1 * item.RarityInt, 5 * item.RarityInt)));
+                }
             }
         }
         public string LogItemsAvailable()

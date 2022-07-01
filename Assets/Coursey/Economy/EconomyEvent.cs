@@ -1,3 +1,4 @@
+using Mono.Data.Sqlite;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -47,6 +48,7 @@ namespace Economy
             }
         }
         private List<ItemClass> _ItemClassesEffectedByEvent = new() { ItemClass.None };
+        private SqliteDataReader rowData;
 
         public EconomyEvent(string name, string description)
         {
@@ -59,6 +61,12 @@ namespace Economy
             EventDescription = description;
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
             this.itemEffectFactor = factor;
+        }
+
+        public EconomyEvent(SqliteDataReader rowData)
+        {
+            EventName = rowData["EventName"].ToString();
+            EventDescription = rowData["EventDescription"].ToString();
         }
 
         public int TriggerEvent(Faction faction)
