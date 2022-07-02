@@ -6,24 +6,22 @@ using System.Data;
 
 namespace Economy
 {
-    public class TradeStationController
+    public static class TradeStationController
     {
-        private const bool _debugThisClass = true;
-        public TradeStationController()
-        {
-            Initialize();
-        }//good
-        public void Initialize()
+        private const bool _debugThisClass = false;
+        public static bool IsReady = false;
+        public static void Initialize()
         {
             using (new TimedBlock("Generating random trade stations", _debugThisClass))
             {
                 GenerateRandomTradeStations();
             }
+            IsReady = true;
         }//good
-        private void GenerateRandomTradeStations()
+        private static void GenerateRandomTradeStations()
         {
             //build trade stations and add to database if they dont exist
-            foreach (var faction in FactionController.factions)
+            foreach (var faction in FactionController.Factions)
             {
                 using(new TimedBlock($"Generating trade stations for Faction {faction.FactionName}", _debugThisClass))
                 {

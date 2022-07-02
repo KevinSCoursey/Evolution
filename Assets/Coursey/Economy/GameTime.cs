@@ -11,86 +11,86 @@ namespace Economy
         {
             get
             {
-                return _Seconds;
+                return _seconds;
             }
             set
             {
-                if(_Seconds - 60 == 0)
+                if(_seconds - 60 == 0)
                 {
-                    _Seconds = 0;
+                    _seconds = 0;
                     Minutes++;
                     TimeBasedCalls();
-                    _TimeReference = (int)Time.time;
+                    _timeReference = (int)Time.time;
                 }
                 else
                 {
-                    _Seconds = value;
+                    _seconds = value;
                 }
             }
         }
-        private static int _Seconds = 1;
-        private static int _TimeReference = 0;
+        private static int _seconds = 1;
+        private static int _timeReference = 0;
         public static int Minutes
         {
             get
             {
-                return _Minutes;
+                return _minutes;
             }
             set
             {
-                if (_Minutes - 60 == 0)
+                if (_minutes - 60 == 0)
                 {
-                    _Minutes = 0;
+                    _minutes = 0;
                     Hours++;
                     TimeBasedCalls();
                 }
                 else
                 {
-                    _Minutes = value;
+                    _minutes = value;
                 }
             }
         }
-        private static int _Minutes = 0;
+        private static int _minutes = 0;
         public static int Hours
         {
             get
             {
-                return _Hours;
+                return _hours;
             }
             set
             {
-                if (_Hours - 24 == 0)
+                if (_hours - 24 == 0)
                 {
-                    _Hours = 0;
+                    _hours = 0;
                     Days++;
                 }
                 else
                 {
-                    _Hours = value;
+                    _hours = value;
                 }
             }
         }
-        private static int _Hours = 0;
+        private static int _hours = 0;
         public static int Days
         {
             get
             {
-                return _Days;
+                return _days;
             }
             set
             {
-                if (_Days - 365 == 0)
+                if (_days - 365 == 0)
                 {
-                    _Days = 0;
+                    _days = 0;
                     Years++;
                 }
                 else
                 {
-                    _Days = value;
+                    _days = value;
                 }
             }
         }
-        private static int _Days = 0;
+        private static int _days = 0;
         public static int Years = 0;
         public static string GetGameTimeString()
         {
@@ -112,7 +112,7 @@ namespace Economy
         }
         public static bool IsGameRunningBehind()
         {
-            int timeDifference = _TimeReference - (int)Time.time;
+            int timeDifference = _timeReference - (int)Time.time;
             if (timeDifference != 60)
             {
                 //broken
@@ -124,7 +124,7 @@ namespace Economy
 
     public class TimedBlock : IDisposable
     {
-        private bool disposedValue;
+        private bool _disposedValue;
         private bool _debugThisClass;
         private string _blockName;
         private DateTime _start;
@@ -135,18 +135,16 @@ namespace Economy
             _start = DateTime.Now;
             _debugThisClass = debugThisClass;
         }
-
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
                 }
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
-
         public void Dispose()
         {
             if (_debugThisClass)
@@ -155,7 +153,6 @@ namespace Economy
                 var span = stop - _start;
                 Debug.Log($"{_blockName} took {span.TotalMilliseconds} ms");
             }
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }

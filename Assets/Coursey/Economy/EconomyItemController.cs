@@ -6,11 +6,12 @@ namespace Economy
 {
     public static class EconomyItemController
     {
-        private const bool _debugThisClass = true;
-        public static bool isLoaded { get; private set; } = false;
+        private const bool _debugThisClass = false;
+        public static bool IsReady = false;
         public static List<EconomyItem> items = new List<EconomyItem>();
         public static void Initialize()//good
         {
+            IsReady = false;
             using(new TimedBlock("Adding default economy items", _debugThisClass))
             {
                 AddDefaultEconomyItems();
@@ -18,7 +19,7 @@ namespace Economy
                 LogAllEconomyItems();
                 DataBaseInteract.UpdateItemData(items);
             }
-            isLoaded = true;
+            IsReady = true;
         }
         private static void AddDefaultEconomyItems()
         {
@@ -325,6 +326,7 @@ namespace Economy
         }//good
         private static void LogAllEconomyItems()//good
         {
+#pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass)
             {
                 foreach (var item in items)
@@ -332,10 +334,11 @@ namespace Economy
                     Debug.Log($"Added the following item to the economy...\n\n{item}");
                 }
             }
+#pragma warning restore CS0162 // Unreachable code detected
         }
         private static void DebugPurposeOnly_RandomlySpecializeItems()//may need to rework how specializations work
         {
-            foreach(Faction faction in FactionController.factions)
+            foreach(Faction faction in FactionController.Factions)
             {
                 int[] itemsToSpecialize = MathTools.GetRandomIndexes(items, MathTools.PseudoRandomIntExclusiveMax(3, items.Count / 2));
                 for(int i = 0; i < itemsToSpecialize.Length; i++)

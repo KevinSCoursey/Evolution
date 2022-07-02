@@ -7,10 +7,10 @@ using System;
 
 namespace Economy
 {
-    public class FactionController
+    public static class FactionController
     {
-        private const bool _debugThisClass = true;
-        private List<string> factionNames = new List<string>
+        private const bool _debugThisClass = false;
+        private static List<string> _factionNames = new List<string>
         {
             "Humans",
             "The Zerg",
@@ -23,57 +23,74 @@ namespace Economy
             "PlaceholderFac7",
             "PlaceholderFac8"
         };
-        private List<string> factionDescriptions = new List<string>
+        private static List<string> _factionDescriptions = new List<string>
         {
             string.Empty,
             "OH GOD RUUUUUUN!!!!"
         };
 
-        public static List<Faction> factions { get ; private set; } = new();
-        public FactionController()//good
+        public static bool IsReady = false;
+
+        public static List<Faction> Factions { get ; private set; } = new();//keep factions loaded
+        public static void Initialize()//good
         {
-            Initialize();
-        }
-        public void Initialize()//good
-        {
+            IsReady = false;
             using (new TimedBlock("Adding default factions", _debugThisClass))
             {
                 AddDefaultFactions();
             }
+            IsReady = true;
         }
-        private void AddDefaultFactions()
+        private static void AddDefaultFactions()
         {
             //ensure same quantity of names and descriptions for faction generation, even if that means having empty strings
-            if(factionNames.Count > factionDescriptions.Count)
+            if(_factionNames.Count > _factionDescriptions.Count)
             {
-                while (factionNames.Count > factionDescriptions.Count)
+                while (_factionNames.Count > _factionDescriptions.Count)
                 {
-                    factionDescriptions.Add(string.Empty);
+                    _factionDescriptions.Add(string.Empty);
                 }
             }
-            if(factionDescriptions.Count > factionNames.Count)
+            if(_factionDescriptions.Count > _factionNames.Count)
             {
-                while(factionDescriptions.Count > factionNames.Count)
+                while(_factionDescriptions.Count > _factionNames.Count)
                 {
-                    factionNames.Add(string.Empty);
+                    _factionNames.Add(string.Empty);
                 }
             }
 
             //build factions and add to database if they dont exist
-            for (int i = 0; i < factionNames.Count; i++)
+            for (int i = 0; i < _factionNames.Count; i++)
             {
-                Faction faction = new Faction(factionNames[i], factionDescriptions[i]);
-                factions.Add(faction);
+                Faction faction = new Faction(_factionNames[i], _factionDescriptions[i]);
+                Factions.Add(faction);
             }
             LogAllFactions();
-            DataBaseInteract.UpdateFactionData(factions);
+            DataBaseInteract.UpdateFactionData(Factions);
         }//good
-        public void GameLoop()
+        public static void GameLoop()
         {
-            /* Trial 1 - save factions in memory and regenerate trade stations
-             * 
-             */
-            using (var basicSql = new BasicSql())
+            IsReady=false;
+            foreach(var faction in Factions)
+            {
+                List<TradeStation> tradeStations = new();
+                tradeStations = DataBaseInteract.LoadTradeStationsForFaction(faction.FactionId);
+                if (_debugThisClass)
+                {
+#pragma warning disable CS0162 // Unreachable code detected
+                    foreach (var tradeStation in tradeStations)
+                    {
+                        Debug.Log($"gamelooptradestationload {tradeStation}");
+                    }
+#pragma warning restore CS0162 // Unreachable code detected
+                }
+            }
+            IsReady=true;
+
+
+
+
+            /*using (var basicSql = new BasicSql())
             {
                 List<Faction> newFactions = new List<Faction>();
 
@@ -123,7 +140,7 @@ namespace Economy
 #pragma warning disable CS0162 // Unreachable code detected
                         if (_debugThisClass) Debug.Log($"{newTradeStation}");
 #pragma warning restore CS0162 // Unreachable code detected
-                    });
+                    });*/
 
                     //build inventory of each trade station
                     // nested speed = 
@@ -157,16 +174,16 @@ namespace Economy
                     /*#pragma warning disable CS0162 // Unreachable code detected
                                             if (_debugThisClass) Debug.Log($"{tradeStation}");
                     #pragma warning restore CS0162 // Unreachable code detected*/
-                }
-            }
+                //}
+            //}
         }
-        public void GenerateRandomTradeStations(List<EconomyItem> economyItems)
+        /*public void GenerateRandomTradeStations(List<EconomyItem> economyItems)
         {
             foreach (Faction faction in factions)
             {
                 faction.GenerateRandomTradeStation();
             }
-        }
+        }*/
         /*public void GenerateRandomTradeRoutes()
         {
             foreach (var faction in factions)
@@ -200,14 +217,14 @@ namespace Economy
                 }
             }
         }*/
-        public TradeRoute GenerateRandomInternalTradeRoute(TradeStation tradeStation)
+        public static TradeRoute GenerateRandomInternalTradeRoute(TradeStation tradeStation)
         {
             if (tradeStation == null)
             {
                 Debug.Log("Null trade station attempted to be used in generating a trade route");
                 return null;
             }
-            var faction = tradeStation.associatedFaction;
+            var faction = tradeStation.AssociatedFaction;
             TradeRoute tradeRoute = null;
             if (faction.TradeStations.Count > 2)
             {
@@ -227,20 +244,20 @@ namespace Economy
                 ? tradeRoute
                 : null;
         }
-        public TradeRoute GenerateRandomExternalTradeRoute(TradeStation tradeStation)
+        public static TradeRoute GenerateRandomExternalTradeRoute(TradeStation tradeStation)
         {
             if (tradeStation == null)
             {
                 Debug.Log("Null trade station attempted to be used in generating a trade route");
                 return null;
             }
-            if (factions.Count < 2)
+            if (Factions.Count < 2)
             {
                 Debug.Log($"An external-to-faction trade route was attempted, but there aren't enough factions!");
                 return null;
             }
 
-            var faction1 = tradeStation.associatedFaction;
+            var faction1 = tradeStation.AssociatedFaction;
             var faction2 = GetRandomFactionExcludingThisOne(faction1);
             TradeRoute tradeRoute = null;
             if (faction2 == null) return null;
@@ -261,32 +278,32 @@ namespace Economy
         }
         public static Faction GetRandomFaction(int attempt = 0)
         {
-            Debug.Log($"Getting random faction... #fac = {factions.Count}");
+            Debug.Log($"Getting random faction... #fac = {Factions.Count}");
             if (attempt >= GameSettings.MaxAttemptsToGenerateSomething)
             {
                 Debug.Log($"Getting a random faction failed after {attempt} attempts.");
                 return null;
             }
-            return factions[MathTools.PseudoRandomIntExclusiveMax(0, factions.Count)];
+            return Factions[MathTools.PseudoRandomIntExclusiveMax(0, Factions.Count)];
         }
         public static Faction GetRandomFactionExcludingThisOne(Faction exclude)
         {
             //broken
             Faction faction = null; 
-            if (exclude == null || factions.Count == 1)
+            if (exclude == null || Factions.Count == 1)
             {
                 return null;
             }
             else
             {
-                int index = factions.IndexOf(exclude);
-                faction = factions[MathTools.PseudoRandomIntExcluding(0, factions.Count, index)];
+                int index = Factions.IndexOf(exclude);
+                faction = Factions[MathTools.PseudoRandomIntExcluding(0, Factions.Count, index)];
             }
             return faction == exclude
                 ? null
                 : faction;
         }
-        public TradeStation GetRandomTradeStation(string factionId)
+        public static TradeStation GetRandomTradeStation(string factionId)
         {
             List<TradeStation> factionTradeStations = new();
 
@@ -299,11 +316,11 @@ namespace Economy
             }
             return null;
         }
-        public TradeStation GetRandomTradeStationExcludingThisOne(TradeStation exclude)
+        public static TradeStation GetRandomTradeStationExcludingThisOne(TradeStation exclude)
         {
             TradeStation tradeStation = null;
-            List<TradeStation> tradeStations = exclude.associatedFaction.TradeStations;
-            if (exclude == null || exclude.associatedFaction.TradeStations.Count == 1)
+            List<TradeStation> tradeStations = exclude.AssociatedFaction.TradeStations;
+            if (exclude == null || exclude.AssociatedFaction.TradeStations.Count == 1)
             {
                 return null;
             }
@@ -316,15 +333,17 @@ namespace Economy
                 ? null
                 : tradeStation;
         }
-        public void LogAllFactions()
+        public static void LogAllFactions()
         {
+#pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass)
             {
-                foreach(var faction in factions)
+                foreach (var faction in Factions)
                 {
                     Debug.Log($"Added the following faction...\n\n{faction}");
                 }
             }
+#pragma warning restore CS0162 // Unreachable code detected
         }
     }
 }

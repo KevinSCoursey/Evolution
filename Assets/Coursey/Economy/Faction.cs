@@ -11,9 +11,8 @@ namespace Economy
         public string FactionId;
         public string FactionName = string.Empty;
         public string FactionDescription = string.Empty;
-
-        public List<Faction> factionAllies = new();
-        public List<Faction> factionEnemies = new();
+        public List<Faction> FactionAllies = new();
+        public List<Faction> FactionEnemies = new();
         public List<TradeStation> TradeStations = new();
 
         public Faction(string factionName, string factionDescription)
@@ -21,27 +20,25 @@ namespace Economy
             this.FactionName = string.IsNullOrEmpty(factionName) ? "Unnamed faction" : factionName;
             this.FactionDescription = string.IsNullOrEmpty(factionDescription) ? "No faction description provided." : factionDescription;
         }
-
         public Faction(SqliteDataReader rowData)
         {
             FactionId = rowData["Id"].ToString();
             FactionName = rowData["Name"].ToString();
             FactionDescription = rowData["Description"].ToString();
         }
-
         public string GetFactionAllianceNames(bool isFriend)
         {
             string returnString = string.Empty;
-            if (isFriend && factionAllies.Count > 0)
+            if (isFriend && FactionAllies.Count > 0)
             {
-                foreach (var ally in factionAllies)
+                foreach (var ally in FactionAllies)
                 {
                     returnString += $"{ally.FactionName}\n";
                 }
             }
-            else if (!isFriend && factionEnemies.Count > 0)
+            else if (!isFriend && FactionEnemies.Count > 0)
             {
-                foreach (var enemy in factionEnemies)
+                foreach (var enemy in FactionEnemies)
                 {
                     returnString += $"{enemy.FactionName}\n";
                 }

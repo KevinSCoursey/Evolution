@@ -6,9 +6,9 @@ namespace Economy
 {
     public static class EconomyEventController
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
 
-        public static bool isLoaded { get; private set; } = false;
+        public static bool IsReady = false;
         public static List<EconomyEvent> economyEvents = new ();
         public static int ConcurrentEvents
         {
@@ -32,9 +32,11 @@ namespace Economy
 
         public static void Initialize()//good
         {
+            IsReady = false;
             AddDefaultEconomyEvents();
             LogAllEconomyEvents();
             DataBaseInteract.UpdateEventData(economyEvents);
+            IsReady = true;
         }
         public static void AddDefaultEconomyEvents()
         {
@@ -81,6 +83,7 @@ namespace Economy
         }//good
         public static void GameLoop()
         {
+            IsReady = false;
             if (ShouldEventBeTriggered())
             {
                 ConcurrentEvents += TriggerRandomEvent(FactionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
@@ -89,6 +92,7 @@ namespace Economy
             {
                 ConcurrentEvents -= RemoveRandomEvent(FactionController.GetRandomFaction(), ShouldEventBeOnWholeFaction());
             }
+            IsReady = true;
         }
         private static bool ShouldEventBeTriggered()
         {
@@ -116,6 +120,7 @@ namespace Economy
         }
         public static void LogAllEconomyEvents()
         {
+#pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass)
             {
                 foreach (var eEvent in economyEvents)
@@ -123,6 +128,7 @@ namespace Economy
                     Debug.Log($"Added the following event to the economy...\n\n{eEvent}");
                 }
             }
+#pragma warning restore CS0162 // Unreachable code detected
         }
         public static int TriggerRandomEvent(Faction faction, bool impactEntireFaction = false)
         {

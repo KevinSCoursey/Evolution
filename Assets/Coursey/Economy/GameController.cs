@@ -17,39 +17,33 @@ namespace Economy
 {
     public class GameController : MonoBehaviour
     {
-        /*public const int THIS_IS_A_CONST;
-        private const int THIS_IS_ANOTHER;
-        private int _thisIsPrivate;
-        public int ThisIsPublic;
-
-        private void Foo()
-        {
-            var something = "this is local";
-        }*/
-
-
-
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
         public static bool gameLoaded { get; private set; } = false;
         public bool gameRunning = true;
         public int tickCounter = 0;
 
-        public static int seed = 0;//8675309;
-        public static FactionController factionController;
-        public static TradeStationController tradeStationController;
+        public static int seed = 0;
         void Start()
         {
             SQLiteData.Initialize();
             gameLoaded = GameSettings.LoadSettings() && MathTools.Initialize(seed) && NameRandomizer.Initialize();
             DataBaseInteract.ClearDataBase();
             DataBaseInteract.CreateDataBase();
-            factionController = new FactionController();
+            FactionController.Initialize();
             EconomyItemController.Initialize();
             EconomyEventController.Initialize();
-            tradeStationController = new TradeStationController();
-
-            Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
-            //InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
+            TradeStationController.Initialize();
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass)
+            {
+                Debug.Log($"The economy will run at {GameSettings.TicksPerSecond} tick(s) per second.");
+            }
+#pragma warning restore CS0162 // Unreachable code detected
+            InvokeRepeating("GameLoop", 1f, 1f / GameSettings.TicksPerSecond);
+        }
+        public static bool GameTickReady()
+        {
+            return FactionController.IsReady && EconomyItemController.IsReady && EconomyEventController.IsReady;
         }
         public void StopGame()
         {
@@ -59,32 +53,45 @@ namespace Economy
         }
         public void GameLoop()
         {
-            using(new TimedBlock("Master game loop (one tick)", _debugThisClass))
+            if (gameRunning && gameLoaded && GameTickReady())
             {
-                if (gameRunning && gameLoaded)
+                using (new TimedBlock("Master game loop (one tick)", _debugThisClass))
                 {
                     if (tickCounter >= GameSettings.TicksPerSecond)
                     {
                         GameTime.Seconds++;
                         tickCounter = 0;
                     }
-
                     tickCounter++;
-
-                    Debug.Log(GameTime.GetGameTimeString());
-
+#pragma warning disable CS0162 // Unreachable code detected
+                    if (_debugThisClass)
+                    {
+                        Debug.Log(GameTime.GetGameTimeString());
+                    }
+#pragma warning restore CS0162 // Unreachable code detected
                     using (new TimedBlock("EVENT CONTROLLER GAME LOOP"))
+                    {
                         EconomyController.GameLoop();
-
+                    }
                     using (new TimedBlock("FACTION GAME LOOP"))
-                        factionController.GameLoop();
-
+                    {
+                        FactionController.GameLoop();
+                    }
                     if (GameTime.GetSecondsRunning() >= (60f * GameSettings.MinutesGameWillRunFloat))
                     {
                         gameRunning = false;
                         StopGame();
                     }
                 }
+            }
+            else if(gameRunning && gameLoaded && !GameTickReady())
+            {
+#pragma warning disable CS0162 // Unreachable code detected
+                if (_debugThisClass)
+                {
+                    Debug.Log($"Game loop wasn't ready! Skipping...");
+                }
+#pragma warning restore CS0162 // Unreachable code detected
             }
         }
     }

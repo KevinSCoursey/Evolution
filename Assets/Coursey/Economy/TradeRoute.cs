@@ -19,24 +19,24 @@ namespace Economy
             TradeRouteValid = Item1 != null
                 && Item2 != null
                 //&& Item1?.guid != Item2?.guid
-                && Item1.internalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
-                && Item2.internalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
-                && Item1.externalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation
-                && Item2.externalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation;
+                && Item1.InternalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
+                && Item2.InternalTradeRoutes.Count < GameSettings.MaxInternalTradeRoutesPerTradeStation
+                && Item1.ExternalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation
+                && Item2.ExternalTradeRoutes.Count < GameSettings.MaxExternalTradeRoutesPerTradeStation;
 
             InternalTradeRoute = TradeRouteValid
-                ? Item1.associatedFaction == Item2.associatedFaction
+                ? Item1.AssociatedFaction == Item2.AssociatedFaction
                 : false;
 #pragma warning disable CS0162 // Unreachable code detected
             //if (_debugThisClass) Debug.Log($"Guid {Item1?.guid} vs {Item2?.guid}");
             if (_debugThisClass && InternalTradeRoute && TradeRouteValid)
             {
-                Debug.Log($"Trade route ({Item1.associatedFaction.FactionName} <-> {Item1.associatedFaction.FactionName}) has been generated between " +
+                Debug.Log($"Trade route ({Item1.AssociatedFaction.FactionName} <-> {Item1.AssociatedFaction.FactionName}) has been generated between " +
                 $"{Trade.Item1.TradeStationName} and {Trade.Item2.TradeStationName}");
             }
             else if (_debugThisClass && !InternalTradeRoute && TradeRouteValid)
             {
-                Debug.Log($"Trade route ({Item1.associatedFaction.FactionName} <-> {Item1.associatedFaction.FactionName}) has been generated between " +
+                Debug.Log($"Trade route ({Item1.AssociatedFaction.FactionName} <-> {Item1.AssociatedFaction.FactionName}) has been generated between " +
                 $"{Trade.Item1.TradeStationName} and {Trade.Item2.TradeStationName}");
             }
             else if (_debugThisClass && !TradeRouteValid)
@@ -64,8 +64,8 @@ namespace Economy
             }
             if (itemsForItem1.Count == 0 || itemsForItem2.Count == 0)
             {
-                Debug.Log($"A trade between {Trade.Item1.associatedFaction.FactionName}'s {Trade.Item1.TradeStationName} and " +
-                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} wasn't able to be completed. " +
+                Debug.Log($"A trade between {Trade.Item1.AssociatedFaction.FactionName}'s {Trade.Item1.TradeStationName} and " +
+                    $"{Trade.Item2.AssociatedFaction.FactionName}'s {Trade.Item2.TradeStationName} wasn't able to be completed. " +
                     $"There were no mutually beneficial items of interest this time.");
             }
             else
@@ -154,15 +154,15 @@ namespace Economy
             {
                 if (InternalTradeRoute)
                 {
-                    str = $"Trade Route: ({Trade.Item1.associatedFaction.FactionName} <-> {Trade.Item1.associatedFaction.FactionName})\n{Trade.Item1.associatedFaction.FactionName}'s " +
-                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation}) <-> " +
-                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} ({Trade.Item2.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation})";
+                    str = $"Trade Route: ({Trade.Item1.AssociatedFaction.FactionName} <-> {Trade.Item1.AssociatedFaction.FactionName})\n{Trade.Item1.AssociatedFaction.FactionName}'s " +
+                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.InternalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation}) <-> " +
+                    $"{Trade.Item2.AssociatedFaction.FactionName}'s {Trade.Item2.TradeStationName} ({Trade.Item2.InternalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation})";
                 }
                 else
                 {
-                    str = $"Trade Route: ({Trade.Item1.associatedFaction.FactionName} <-> {Trade.Item2.associatedFaction.FactionName})\n{Trade.Item1.associatedFaction.FactionName}'s " +
-                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation}) <-> " +
-                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} Trade Station ({Trade.Item2.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation})";
+                    str = $"Trade Route: ({Trade.Item1.AssociatedFaction.FactionName} <-> {Trade.Item2.AssociatedFaction.FactionName})\n{Trade.Item1.AssociatedFaction.FactionName}'s " +
+                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.ExternalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation}) <-> " +
+                    $"{Trade.Item2.AssociatedFaction.FactionName}'s {Trade.Item2.TradeStationName} Trade Station ({Trade.Item2.ExternalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation})";
                 }
             }
             else

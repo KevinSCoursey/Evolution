@@ -808,22 +808,22 @@ namespace Economy
                     var sql = @"
                     SELECT TradeStationInventory.*, EconomyItem.*
                     FROM EconomyItem 
-                    JOIN TradeStationInventory ON EconomyItem.EconomyItemId = TradeStationInventory.EconomyItemId 
+                    INNER JOIN TradeStationInventory ON EconomyItem.EconomyItemId = TradeStationInventory.EconomyItemId 
                     WHERE TradeStationInventory.TradeStationId = $tradeStationId";
                     basicSql.ExecuteReader(
-                        sql,
-                        new List<KeyValuePair<string, string>>()
+                    sql,
+                    new List<KeyValuePair<string, string>>()
+                    {
+                        new KeyValuePair<string, string>("$tradeStationId", tradeStationId),
+                    },
+                    (rowData) =>
+                    {
+                        var itemToAdd = new EconomyItem(rowData, DataObjectType.TradeStationInventoryItem);
+                        if (!inventory.Any(_ => _.EconomyItemId == itemToAdd.EconomyItemId))
                         {
-                            new KeyValuePair<string, string>("$tradeStationId", tradeStationId),
-                        },
-                        (rowData) =>
-                        {
-                            var itemToAdd = new EconomyItem(rowData, DataObjectType.TradeStationInventoryItem);
-                            if (!inventory.Any(_ => _.EconomyItemId == itemToAdd.EconomyItemId))
-                            {
-                                inventory.Add(itemToAdd);
-                            }
-                        });
+                            inventory.Add(itemToAdd);
+                        }
+                    });
                 }
             }
             return inventory;
@@ -884,10 +884,42 @@ namespace Economy
             }
             return items;
         }
+        public static List<TradeStation> LoadTradeStationsForFaction(string factionId)
+        {
+            List<TradeStation> tradeStations = new();
+            using (new TimedBlock("Loading trade stations", _debugThisClass))
+            {
+                using (var basicSql = new BasicSql())
+                {
+                    var sql = @"
+                    SELECT *
+                    FROM TradeStation 
+                    WHERE FactionId = $factionId";
+                    basicSql.ExecuteReader(
+                    sql,
+                    new List<KeyValuePair<string, string>>()
+                    {
+                        new KeyValuePair<string, string>("$factionId", factionId),
+                    },
+                    (rowData) =>
+                    {
+                        var tradeStationToAdd = new TradeStation(rowData);
+                        if (!tradeStations.Any(_ => _.TradeStationId == tradeStationToAdd.TradeStationId))
+                        {
+                            tradeStations.Add(tradeStationToAdd);
+                        }
+                    });
+                }
+                foreach(var tradeStation in tradeStations)
+                {
+                    tradeStation.LoadInventory();
+                }
+            }
+            return tradeStations;
+        }
     }
     public enum DataObjectType
     {
         Faction, TradeStation, EconomyItem, EconomyEvent, TradeStationInventoryItem
     }
-
 }

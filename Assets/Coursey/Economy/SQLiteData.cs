@@ -3,271 +3,52 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-
-public class SQLiteData : MonoBehaviour
+namespace Economy
 {
-    private const bool _debugThisClass = false;//true;
-
-    public static string dataFileName = "data.db";
-    public static string dataSubDirectory = "data";
-    public static string path;
-
-    public TextAsset CreateDatabaseScript;
-
-    public static void Initialize()
+    public class SQLiteData
     {
-        if (Directory.Exists(Path.Combine(Application.persistentDataPath, dataSubDirectory)))
+        private const bool _debugThisClass = false;
+
+        public static string DataFileName = "data.db";
+        public static string DataSubDirectory = "data";
+        public static string Path;
+        public TextAsset CreateDatabaseScript;
+
+        public static void Initialize()
         {
-            path = Path.Combine(Application.persistentDataPath, dataSubDirectory);
-            Debug.Log($"Subdirectory \"{dataSubDirectory}\" already exists with path \"{path}\"");
-        }
-        else
-        {
-            Directory.CreateDirectory(Path.Combine(Application.persistentDataPath, dataSubDirectory));
-            path = Path.Combine(Application.persistentDataPath, dataSubDirectory);
-            Debug.Log($"Subdirectory \"{dataSubDirectory}\" didn't exist. Creating subdirectory \"{dataSubDirectory}\" with path \"{path}\"");
-        }
-        Debug.Log($"Reading from \"{path}\"");
-    }
-    /*private void RunTest()
-    {
-        using (var basicSql = new BasicSql())
-        {
-            basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS Item (id INTEGER PRIMARY KEY , Name VARCHAR(100));
-                ");
-
-            var id = DateTime.Now.Millisecond;
-            basicSql.ExecuteNonReader(
-                "INSERT INTO Item (Id, Name) VALUES ($id, $name)",
-                //item.Add(list<T>);
-
-                new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("$id", id.ToString()),
-                    new KeyValuePair<string, string>("$name", Guid.NewGuid().ToString())
-                }
-                );
-
-            var name = "";
-            basicSql.ExecuteReader(
-                "SELECT Name FROM Item WHERE Id = $id",
-                //SELECT * FROM tableName WHERE var = value
-                //
-                //var = list.Select(_ => _.var == value);
-                new List<KeyValuePair<string, string>>()
-                {
-                    new KeyValuePair<string, string>("$id", id.ToString())
-                },
-                (rowData) =>
-                {
-                    name = rowData["Name"].ToString();
-                }
-                );
-
-            name = basicSql.ExecuteScalar<string>(
-                "SELECT Name FROM Item WHERE Id = $id",
-                new List<KeyValuePair<string, string>>()
-                {
-                    new KeyValuePair<string, string>("$id", id.ToString())
-                }
-                );
-        }
-    }*/
-}
-
-public class BasicSql : IDisposable
-{
-    private const bool _debugThisClass = false;//true;
-    private string DataFilePath => Path.Combine(SQLiteData.path, SQLiteData.dataFileName);
-    private static SqliteConnection _connection;
-    private bool _disposedValue;
-
-    public BasicSql()
-    {
-        if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
-        {
-            OpenConnection();
-        }
-    }
-
-    public void ExecuteNonReader(string sql)
-    {
+            if (Directory.Exists(System.IO.Path.Combine(Application.persistentDataPath, DataSubDirectory)))
+            {
+                Path = System.IO.Path.Combine(Application.persistentDataPath, DataSubDirectory);
 #pragma warning disable CS0162 // Unreachable code detected
-        if (_debugThisClass) Debug.Log(sql);
+                if (_debugThisClass) Debug.Log($"Subdirectory \"{DataSubDirectory}\" already exists with path \"{Path}\"");
 #pragma warning restore CS0162 // Unreachable code detected
-        if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
-        {
-            OpenConnection();
-        }
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            command.ExecuteNonQuery();
-        }
-    }
-
-    public void ExecuteNonReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
-    {
+            }
+            else
+            {
+                Directory.CreateDirectory(System.IO.Path.Combine(Application.persistentDataPath, DataSubDirectory));
+                Path = System.IO.Path.Combine(Application.persistentDataPath, DataSubDirectory);
 #pragma warning disable CS0162 // Unreachable code detected
-        if (_debugThisClass) Debug.Log(sql);
+                if (_debugThisClass) Debug.Log($"Subdirectory \"{DataSubDirectory}\" didn't exist. Creating subdirectory \"{DataSubDirectory}\" with path \"{Path}\"");
 #pragma warning restore CS0162 // Unreachable code detected
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            foreach (var pram in parameters)
-            {
-                command.Parameters.AddWithValue(pram.Key, pram.Value);
             }
-            command.ExecuteNonQuery();
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log($"Reading from \"{Path}\"");
+#pragma warning restore CS0162 // Unreachable code detected
         }
     }
-
-    public void ExecuteReader(string sql, Action<SqliteDataReader> rowAction)
+    public class BasicSql : IDisposable
     {
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    rowAction?.Invoke(reader);
-                }
-            }
-        }
-    }
-
-    public void ExecuteReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters, Action<SqliteDataReader> rowAction)
-    {
-        if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
-        {
-            OpenConnection();
-        }
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            foreach (var pram in parameters)
-            {
-                command.Parameters.AddWithValue(pram.Key, pram.Value);
-            }
-            using (var reader = command.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    rowAction?.Invoke(reader);
-                }
-            }
-        }
-    }
-
-    public N ExecuteScalar<N>(string sql)
-    {
-        N result = default;
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            using (var reader = command.ExecuteReader())
-            {
-                if (reader.Read())
-                {
-                    result = (N)reader[0];
-                }
-            }
-        }
-        return result;
-    }
-
-    public string ExecuteScalar(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
-    {
-        var result = "";
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText = sql;
-            foreach (var pram in parameters)
-            {
-                command.Parameters.AddWithValue(pram.Key, pram.Value);
-            }
-            using (var reader = command.ExecuteReader())
-            {
-                if (reader.Read())
-                {
-                    result = reader[0]?.ToString();
-                }
-            }
-        }
-        return result;
-    }
-
-    private void OpenConnection()
-    {
-        _connection = new SqliteConnection($"URI=file:{DataFilePath}");
-        _connection.Open();
-    }
-
-    public void RunScript(TextAsset textAsset)
-    {
-        using (var cmd = _connection.CreateCommand())
-        {
-            cmd.CommandText = textAsset.text;
-            cmd.ExecuteNonQuery();
-        }
-    }
-
-    #region IDisposable
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposedValue)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects)
-                if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
-                {
-                    _connection.Close();
-                }
-            }
-
-            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-            // TODO: set large fields to null
-            _disposedValue = true;
-        }
-    }
-
-    // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-    // ~BasicSql()
-    // {
-    //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    //     Dispose(disposing: false);
-    // }
-
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
-    #endregion
-}
-
-/*
-public class BasicSql : IDisposable
-    {
-        // C:\Users\scott\AppData\LocalLow\YellowDuckSoftware\WarForTheVoid\data.dat
-
-        private const string DATA_FILE_NAME = "data.dat";
-        private static string DataPath = Application.persistentDataPath;
-        private string DataFilePath = DataPath + "/" + DATA_FILE_NAME;
+        private const bool _debugThisClass = false;
+        private string DataFilePath => System.IO.Path.Combine(SQLiteData.Path, SQLiteData.DataFileName);
         private static SqliteConnection _connection;
         private bool _disposedValue;
+        private static string DataPath = Application.persistentDataPath;
         private bool _useTransaction;
         private SqliteTransaction _transaction;
 
         static BasicSql()
         {
         }
-
         public BasicSql(bool useTransaction = false)
         {
             _useTransaction = useTransaction;
@@ -276,7 +57,6 @@ public class BasicSql : IDisposable
                 OpenConnection();
             }
         }
-
         public void BeginTransaction()
         {
             if (!_useTransaction)
@@ -286,21 +66,22 @@ public class BasicSql : IDisposable
 
             _transaction = _connection.BeginTransaction();
         }
-
         public void CommitTransaction()
         {
             _transaction.Commit();
             _transaction = null;
         }
-
         public void RollbackTransaction()
         {
             _transaction.Rollback();
             _transaction = null;
         }
-
         public void ExecuteNonReader(string sql)
         {
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
+            OpenConnection();
             try
             {
                 using (var command = _connection.CreateCommand())
@@ -319,9 +100,12 @@ public class BasicSql : IDisposable
                 Debug.LogException(ex);
             }
         }
-
         public void ExecuteNonReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
         {
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
+            OpenConnection();
             try
             {
                 using (var command = _connection.CreateCommand())
@@ -344,7 +128,6 @@ public class BasicSql : IDisposable
                 Debug.LogException(ex);
             }
         }
-
         public void ExecuteReader(string sql, Action<SqliteDataReader> rowAction)
         {
             try
@@ -371,9 +154,12 @@ public class BasicSql : IDisposable
                 Debug.LogException(ex);
             }
         }
-
         public void ExecuteReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters, Action<SqliteDataReader> rowAction)
         {
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
+            OpenConnection();
             try
             {
                 using (var command = _connection.CreateCommand())
@@ -402,7 +188,6 @@ public class BasicSql : IDisposable
                 Debug.LogException(ex);
             }
         }
-
         public N ExecuteScalar<N>(string sql)
         {
             N result = default;
@@ -431,7 +216,6 @@ public class BasicSql : IDisposable
             }
             return result;
         }
-
         public N ExecuteScalar<N>(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
         {
             N result = default;
@@ -464,19 +248,48 @@ public class BasicSql : IDisposable
             }
             return result;
         }
+        public string ExecuteScalar(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+#pragma warning disable CS0162 // Unreachable code detected
+            if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
+            OpenConnection();
+            var result = "";
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
 
+                    command.CommandText = sql;
+                    foreach (var pram in parameters)
+                    {
+                        command.Parameters.AddWithValue(pram.Key, pram.Value);
+                    }
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result = reader[0]?.ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+            return result;
+        }
         private void OpenConnection()
         {
             if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
             {
-                var needsCreating = false;
                 try
                 {
-                    if (!File.Exists(DataFilePath))
-                    {
-                        needsCreating = true;
-                    }
-
                     _connection = new SqliteConnection($"URI=file:{DataFilePath}");
                     _connection.Open();
                 }
@@ -484,14 +297,29 @@ public class BasicSql : IDisposable
                 {
                     Debug.LogException(ex);
                 }
-                if (needsCreating)
-                {
-                    var text = Resources.Load("Database/CreateDatabase") as TextAsset;
-                    ExecuteNonReader(text.text);
-                }
             }
         }
-
+        public void RunScript(TextAsset textAsset)
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = textAsset.text;
+                cmd.ExecuteNonQuery();
+            }
+        }
+        public static void DebugRowData(SqliteDataReader rowData, bool debugThatClass)
+        {
+            if (debugThatClass)
+            {
+                var fieldCount = rowData.FieldCount;
+                string debug = "";
+                for (var currentFieldIdx = 0; currentFieldIdx < fieldCount; currentFieldIdx++)
+                {
+                    debug += $"{rowData.GetName(currentFieldIdx)} - {rowData[currentFieldIdx].ToString()}\n";
+                }
+                Debug.Log(debug);
+            }
+        }
         #region IDisposable
 
         protected virtual void Dispose(bool disposing)
@@ -500,32 +328,19 @@ public class BasicSql : IDisposable
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
                     if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
                     {
                         _connection.Close();
                     }
                 }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _disposedValue = true;
             }
         }
-
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
-        // ~BasicSql()
-        // {
-        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        //     Dispose(disposing: false);
-        // }
-
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
         #endregion
     }
-*/
+}

@@ -32,7 +32,7 @@ namespace Economy
         {
             if (GameController.gameLoaded)
             {
-                return false;//already loaded
+                return false;
             }
             else
             {
@@ -42,7 +42,7 @@ namespace Economy
         }
         public static void SaveSettings()
         {
-
+            //todo
         }
         public static void ReadConfigs()
         {
@@ -50,6 +50,8 @@ namespace Economy
             var generalSettings = jsonManager.ReadConfig<GeneralConfig>();
             GameController.seed = generalSettings.seed;
             MinutesGameWillRunFloat = generalSettings.MinutesGameWillRunFloat;
+            NumTradeStationsPerDBBlock = generalSettings.NumTradeStationsPerDBBlock;
+            RegenerateSQLiteDBsEachRun = generalSettings.RegenerateSQLiteDBsEachRun;
             jsonManager.WriteConfig(generalSettings);
 
             jsonManager = new JsonManager();
@@ -61,12 +63,15 @@ namespace Economy
             AverageEconomyItemsProducedPerTick = economySettings.AverageEconomyItemsProducedPerTick;
             AverageEconomyItemsUsedPerTick = economySettings.AverageEconomyItemsUsedPerTick;
             MaxTradeStationsPerFaction = economySettings.MaxTradeStationsPerFaction;
+            MinTradeStationsPerFaction = economySettings.MinTradeStationsPerFaction;
             MaxInternalTradeRoutesPerTradeStation = economySettings.MaxInternalTradeRoutesPerStation;
             MaxExternalTradeRoutesPerTradeStation = economySettings.MaxExternalTradeRoutesPerStation;
             MaxAttemptsToGenerateSomething = economySettings.MaxAttemptsToGenerateSomething;
-            MinTradeStationsPerFaction = economySettings.MinTradeStationsPerFaction;
             AverageMoneyHeldPerTradeStation = economySettings.AverageMoneyHeldPerTradeStation;
             AverageNumItemsExchangedPerTrade = economySettings.AverageNumItemsExchangedPerTrade;
+            PercentTaxExternalTrades = economySettings.PercentTaxExternalTrades;
+            SameFactionPriceDiscount = economySettings.SameFactionPriceDiscount;
+            AverageMaxQuantityOfItem = economySettings.AverageMaxQuantityOfItem;
             jsonManager.WriteConfig(economySettings);
         }
     }
