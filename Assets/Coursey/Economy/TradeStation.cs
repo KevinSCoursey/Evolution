@@ -1,9 +1,8 @@
-using System;
+using Mono.Data.Sqlite;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
-using System.Data;
-using Mono.Data.Sqlite;
 
 namespace Economy
 {
@@ -13,110 +12,138 @@ namespace Economy
         //private List<Faction> factions = new();
         //private List<EconomyItem> economyItems = new();
 
-        public string tradeStationName = string.Empty;
-        public string tradeStationDescription = string.Empty;
-        public List<EconomyEvent> economyEvents = new();
+        public string TradeStationName = string.Empty;
+        public string TradeStationDescription = string.Empty;
+        public List<EconomyEvent> EconomyEvents = new();
         public int money = 100000;
 
         public Faction associatedFaction;
-        public string factionId;
-        public string tradeStationId;
+        public string FactionId;
+        public string TradeStationId;
         public List<ItemClass> itemClassesSpecialized = new() { ItemClass.Generic };
-        public List<EconomyItem> inventoryItems = new();
+        public List<EconomyItem> InventoryItems = new();
         public List<TradeRoute> internalTradeRoutes = new();
         public List<TradeRoute> externalTradeRoutes = new();
 
         public TradeStation(Faction associatedFaction, string tradeStationName = "Unnamed station", string tradeStationDescription = "No description provided.")
         {
             this.associatedFaction = associatedFaction;
-            this.tradeStationName = tradeStationName;
-            this.tradeStationDescription = tradeStationDescription;
-            factionId = associatedFaction.factionId;
-            using (var basicSql = new BasicSql())
-            /*{
-                tradeStationId = basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name",
-                new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("$name", tradeStationName)
-                });
-            }*/
-            InitializeInventory();
-            CalculateItemDistribution();
-            CalculatePriceDistribution();
+            this.TradeStationName = tradeStationName;
+            this.TradeStationDescription = tradeStationDescription;
+            FactionId = associatedFaction.FactionId;
+        }//good
+        public void Initialize()
+        {
+            GenerateNewInventory();
         }
         public TradeStation(SqliteDataReader rowData)
         {
-            tradeStationId = rowData["Id"].ToString();
-            factionId = rowData["FactionId"].ToString();
-            tradeStationName = rowData["Name"].ToString();
-            tradeStationDescription = rowData["Description"].ToString();
+            TradeStationId = rowData["Id"].ToString();
+            FactionId = rowData["FactionId"].ToString();
+            TradeStationName = rowData["Name"].ToString();
+            TradeStationDescription = rowData["Description"].ToString();
+            LoadInventory();
         }
-        private void InitializeInventory()
+        private void GenerateNewInventory(bool replaceExisting = false)
         {
-            using (new TimedBlock("TradeStationInitializeInventory"))
+            if(InventoryItems.Count == 0 || replaceExisting)
             {
-                using (var basicSql = new BasicSql())
+                using (new TimedBlock($"Generating new inventory for trade station {TradeStationName}", _debugThisClass))
                 {
-                    foreach (var itemClass in itemClassesSpecialized)
+                    LoadInventory();
+                    AddNewItemToInventory(DataBaseInteract.LoadEconomyItemsWithItemClass(itemClassesSpecialized));
+                    ReCalculateItemDistribution();
+                    ReCalculatePriceDistribution();
+                    if (_debugThisClass)
                     {
-                        basicSql.ExecuteReader(@"SELECT * FROM EconomyItem WHERE ItemClassId = $itemClassId",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$itemClassId", itemClass.ToString())
-                        }, (rowData) =>
-                        {
-                            EconomyItem economyItemToAdd = new EconomyItem(rowData);
-                            inventoryItems.Add(economyItemToAdd);
-                        });
+                        Debug.Log($"{this}");
                     }
                 }
+            }
+            else
+            {
+                LoadInventory();
+            }
+        }
+        public void AddNewItemToInventory(EconomyItem itemToAdd)
+        {
+            if (!InventoryItems.Any(_ => _.EconomyItemId == itemToAdd.EconomyItemId))
+            {
+                InventoryItems.Add(itemToAdd);
+            }
+        }
+        public void AddNewItemToInventory(List<EconomyItem> itemsToAdd)
+        {
+            foreach(var itemToAdd in itemsToAdd)
+            {
+                if (!InventoryItems.Any(_ => _.EconomyItemId == itemToAdd.EconomyItemId))
+                {
+                    InventoryItems.Add(itemToAdd);
+                }
+            }
+        }
+        private void LoadInventory()
+        {
+            using (new TimedBlock($"Loading inventory data for {TradeStationName}", _debugThisClass))
+            {
+                InventoryItems = DataBaseInteract.LoadTradeStationInventory(TradeStationId);
+            }
+        }
+        public void ReCalculateItemDistribution()
+        {
+            if(InventoryItems.Count == 0) LoadInventory();
+            foreach (EconomyItem item in InventoryItems)
+            {
+                if (item.MaxQuantityOfItem <= 1) item.MaxQuantityOfItem = MathTools.PseudoRandomIntExclusiveMax(0, GameSettings.AverageMaxQuantityOfItem * 2);
+                item.QuantityOfItem = MathTools.PseudoRandomIntExclusiveMax(0, item.MaxQuantityOfItem);
+            }
+        }
+        public void ReCalculatePriceDistribution()
+        {
+            if(InventoryItems.Count == 0) LoadInventory();
+            foreach (EconomyItem item in InventoryItems)
+            {
+                item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
+                item.SalePrice = MathTools.CalculateItemSalePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
             }
         }
         public void UseItems()
         {
-            foreach (var item in inventoryItems)
+            foreach (var item in InventoryItems)
             {
                 float factor = 1f;
-                foreach (var eEvent in economyEvents)
+                foreach (var eEvent in EconomyEvents)
                 {
-                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.itemClass) && eEvent.itemEffectFactor < 1)
+                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.EconomyItemClass) && eEvent.itemEffectFactor < 1)
                     {
                         factor *= eEvent.itemEffectFactor;
                     }
                 }
                 item.QuantityOfItem = (int)(factor *
                 (item.QuantityOfItem - GameSettings.AverageEconomyItemsProducedPerTick -
-                MathTools.PseudoRandomIntExclusiveMax(1 * item.rarityInt, 5 * item.rarityInt)));
+                MathTools.PseudoRandomIntExclusiveMax(1 * item.RarityInt, 5 * item.RarityInt)));
             }
         }
         public void ProduceItems()
         {
-            foreach (EconomyItem item in inventoryItems)
+            foreach (EconomyItem item in InventoryItems)
             {
                 float factor = 1f;
-                foreach (EconomyEvent eEvent in economyEvents)
+                foreach (EconomyEvent eEvent in EconomyEvents)
                 {
-                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.itemClass) && eEvent.itemEffectFactor > 1)
+                    if (eEvent.ItemClassesEffectedByEvent.Contains(item.EconomyItemClass) && eEvent.itemEffectFactor > 1)
                     {
                         factor *= eEvent.itemEffectFactor;
                     }
                 }
                 item.QuantityOfItem = (int)(factor *
                 (item.QuantityOfItem + GameSettings.AverageEconomyItemsProducedPerTick +
-                MathTools.PseudoRandomIntExclusiveMax(1, 5 * item.rarityInt)));
-            }
-        }
-        public void CalculatePriceDistribution()
-        {
-            foreach (EconomyItem item in inventoryItems)
-            {
-                item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
-                item.SalePrice = MathTools.CalculateItemSalePrice(item, item.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
+                MathTools.PseudoRandomIntExclusiveMax(1, 5 * item.RarityInt)));
             }
         }
         public void ExecuteAllTrades()
         {
-            Debug.Log($"Trade Station {tradeStationName} is beginning all trade routes... \n{this}");
+            Debug.Log($"Trade Station {TradeStationName} is beginning all trade routes... \n{this}");
             foreach (TradeRoute tradeRoute in internalTradeRoutes)
             {
                 tradeRoute.AI_ConductTrade();
@@ -127,16 +154,16 @@ namespace Economy
                 tradeRoute.AI_ConductTrade();
             }
             Debug.Log($"External trades complete.");
-            Debug.Log($"Trade Station {tradeStationName} has concluded all trade routes. \n{this}");
+            Debug.Log($"Trade Station {TradeStationName} has concluded all trade routes. \n{this}");
         }
         public List<EconomyItem> ItemsOfInterest(float percentOfMaxQuantity = 0.25f)
         {
-            List<EconomyItem> itemsOfInterest = new List<EconomyItem>(inventoryItems.Where(_ => _.QuantityOfItem <= percentOfMaxQuantity * _.MaxQuantityOfItem));
+            List<EconomyItem> itemsOfInterest = new List<EconomyItem>(InventoryItems.Where(_ => _.QuantityOfItem <= percentOfMaxQuantity * _.MaxQuantityOfItem));
 
             if (_debugThisClass)
             {
-                string debugString = $"{tradeStationName} items of interest are ";
-                debugString = debugString + string.Join(", ", itemsOfInterest.Select(_ => _.itemName));
+                string debugString = $"{TradeStationName} items of interest are ";
+                debugString = debugString + string.Join(", ", itemsOfInterest.Select(_ => _.EconomyItemName));
                 Debug.Log(debugString);
             }
 
@@ -147,18 +174,18 @@ namespace Economy
             int numItemsExchanged = 0;
             int numItemsRequested = MathTools.PseudoRandomIntExclusiveMax(15, GameSettings.AverageNumItemsExchangedPerTrade * 2 + 15);
 
-            var referenceTo_fromTradeStation_economyItem = fromTradeStation.inventoryItems.Find(_ => _.itemName == economyItem.itemName);
-            var referenceTo_ownTradeStation_economyItem = inventoryItems.Find(_ => _.itemName == economyItem.itemName);
+            var referenceTo_fromTradeStation_economyItem = fromTradeStation.InventoryItems.Find(_ => _.EconomyItemName == economyItem.EconomyItemName);
+            var referenceTo_ownTradeStation_economyItem = InventoryItems.Find(_ => _.EconomyItemName == economyItem.EconomyItemName);
 
-            if(referenceTo_fromTradeStation_economyItem == null)
+            if (referenceTo_fromTradeStation_economyItem == null)
             {
                 EconomyItem itemToAdd = new EconomyItem(economyItem);
                 itemToAdd.QuantityOfItem = 0;
                 itemToAdd.PurchasePrice = MathTools.CalculateItemPurchasePrice(itemToAdd, itemToAdd.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
                 itemToAdd.SalePrice = MathTools.CalculateItemSalePrice(itemToAdd, itemToAdd.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
-                fromTradeStation.inventoryItems.Add(itemToAdd);
+                fromTradeStation.InventoryItems.Add(itemToAdd);
                 referenceTo_fromTradeStation_economyItem = itemToAdd;
-                Debug.Log($"{fromTradeStation.tradeStationName} didn't have {economyItem.itemName} in their inventory, so it was added:\n {itemToAdd}");
+                Debug.Log($"{fromTradeStation.TradeStationName} didn't have {economyItem.EconomyItemName} in their inventory, so it was added:\n {itemToAdd}");
             }
 
             if (referenceTo_ownTradeStation_economyItem == null)
@@ -167,9 +194,9 @@ namespace Economy
                 itemToAdd.QuantityOfItem = 0;
                 itemToAdd.PurchasePrice = MathTools.CalculateItemPurchasePrice(itemToAdd, itemToAdd.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
                 itemToAdd.SalePrice = MathTools.CalculateItemSalePrice(itemToAdd, itemToAdd.FactionsThatSpecializeInThisItem.Contains(associatedFaction));
-                inventoryItems.Add(itemToAdd);
+                InventoryItems.Add(itemToAdd);
                 referenceTo_ownTradeStation_economyItem = itemToAdd;
-                Debug.Log($"{fromTradeStation.tradeStationName} didn't have {economyItem.itemName} in their inventory, so it was added:\n {itemToAdd}");
+                Debug.Log($"{fromTradeStation.TradeStationName} didn't have {economyItem.EconomyItemName} in their inventory, so it was added:\n {itemToAdd}");
             }
 
             bool AI_PurchaseValid = false;
@@ -186,7 +213,7 @@ namespace Economy
             {
                 numItemsExchanged = referenceTo_fromTradeStation_economyItem.QuantityOfItem;
                 //they dont have enough item to give so theyll give all they can
-                if(numItemsExchanged == 0) return;
+                if (numItemsExchanged == 0) return;
                 //trade is useless if nothing to give
             }
             //do they have the space for it
@@ -211,16 +238,16 @@ namespace Economy
                 referenceTo_ownTradeStation_economyItem.QuantityOfItem += numItemsExchanged;
                 fromTradeStation.money += cost;
                 money -= cost;
-                Debug.Log($"Faction {associatedFaction.factionName}'s Trade Station {tradeStationName} has bought {economyItem.itemName} x{numItemsExchanged} for ${cost} from the " +
-                $"{fromTradeStation.associatedFaction.factionName} Faction's {fromTradeStation.tradeStationName} Trade Station. " +
-                $"{tradeStationName} now has x{referenceTo_ownTradeStation_economyItem.QuantityOfItem} and {fromTradeStation.tradeStationName} " +
+                Debug.Log($"Faction {associatedFaction.FactionName}'s Trade Station {TradeStationName} has bought {economyItem.EconomyItemName} x{numItemsExchanged} for ${cost} from the " +
+                $"{fromTradeStation.associatedFaction.FactionName} Faction's {fromTradeStation.TradeStationName} Trade Station. " +
+                $"{TradeStationName} now has x{referenceTo_ownTradeStation_economyItem.QuantityOfItem} and {fromTradeStation.TradeStationName} " +
                 $"now has x{referenceTo_fromTradeStation_economyItem.QuantityOfItem}");
             }
             else
             {
-                Debug.Log($"Faction {associatedFaction.factionName}'s Trade Station {tradeStationName} attempted to buy {economyItem.itemName} x{numItemsExchanged} for ${cost} from the " +
-                $"{fromTradeStation.associatedFaction.factionName} Faction's {fromTradeStation.tradeStationName} Trade Station, but they either couldn't afford it or the interaction was invalid. " +
-                $"{tradeStationName} still has x{referenceTo_ownTradeStation_economyItem.QuantityOfItem} and {fromTradeStation.tradeStationName} " +
+                Debug.Log($"Faction {associatedFaction.FactionName}'s Trade Station {TradeStationName} attempted to buy {economyItem.EconomyItemName} x{numItemsExchanged} for ${cost} from the " +
+                $"{fromTradeStation.associatedFaction.FactionName} Faction's {fromTradeStation.TradeStationName} Trade Station, but they either couldn't afford it or the interaction was invalid. " +
+                $"{TradeStationName} still has x{referenceTo_ownTradeStation_economyItem.QuantityOfItem} and {fromTradeStation.TradeStationName} " +
                 $"still has x{referenceTo_fromTradeStation_economyItem.QuantityOfItem}");
             }
         }
@@ -229,27 +256,22 @@ namespace Economy
 
         }
 
-        public void CalculateItemDistribution()
-        {
-            foreach (EconomyItem item in inventoryItems)
-            {
-                item.QuantityOfItem = MathTools.PseudoRandomIntExclusiveMax(0, item.MaxQuantityOfItem);//max currently 10000
-            }
-        }
+        
         public string LogItemsAvailable()
         {
             string returnString = string.Empty;
-            foreach (IEconomyItem item in inventoryItems)
+            foreach (EconomyItem item in InventoryItems)
             {
-                returnString += $"\n{item.itemName} | Buy: ${item.PurchasePrice} / {item.priceRoof} | Sell: ${item.SalePrice} / {item.priceFloor} | Quantity: {item.QuantityOfItem} / {item.MaxQuantityOfItem}";
+                returnString += $"\n{item.EconomyItemName} | Buy: ${item.PurchasePrice} / {item.PriceRoof} | Sell: ${item.SalePrice} / {item.PriceFloor} | Quantity: {item.QuantityOfItem} / {item.MaxQuantityOfItem}";
             }
             return returnString == string.Empty ? "None" : returnString;
         }
         public override string ToString()
         {
             return
-                $"Station name: {tradeStationName}\n" +
-                $"Station description: {tradeStationDescription}\n" +
+                $"Trade Station Id: {TradeStationId}\n" +
+                $"Station name: {TradeStationName}\n" +
+                $"Station description: {TradeStationDescription}\n" +
                 $"Money: ${money}\n" +
                 $"Items available:{LogItemsAvailable()}";
         }

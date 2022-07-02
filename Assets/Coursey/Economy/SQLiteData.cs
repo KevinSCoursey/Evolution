@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class SQLiteData : MonoBehaviour
 {
+    private const bool _debugThisClass = false;//true;
+
     public static string dataFileName = "data.db";
     public static string dataSubDirectory = "data";
     public static string path;
@@ -76,6 +78,7 @@ public class SQLiteData : MonoBehaviour
 
 public class BasicSql : IDisposable
 {
+    private const bool _debugThisClass = false;//true;
     private string DataFilePath => Path.Combine(SQLiteData.path, SQLiteData.dataFileName);
     private static SqliteConnection _connection;
     private bool _disposedValue;
@@ -90,6 +93,9 @@ public class BasicSql : IDisposable
 
     public void ExecuteNonReader(string sql)
     {
+#pragma warning disable CS0162 // Unreachable code detected
+        if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
         if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
         {
             OpenConnection();
@@ -103,6 +109,9 @@ public class BasicSql : IDisposable
 
     public void ExecuteNonReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
     {
+#pragma warning disable CS0162 // Unreachable code detected
+        if (_debugThisClass) Debug.Log(sql);
+#pragma warning restore CS0162 // Unreachable code detected
         using (var command = _connection.CreateCommand())
         {
             command.CommandText = sql;
@@ -241,3 +250,282 @@ public class BasicSql : IDisposable
     }
     #endregion
 }
+
+/*
+public class BasicSql : IDisposable
+    {
+        // C:\Users\scott\AppData\LocalLow\YellowDuckSoftware\WarForTheVoid\data.dat
+
+        private const string DATA_FILE_NAME = "data.dat";
+        private static string DataPath = Application.persistentDataPath;
+        private string DataFilePath = DataPath + "/" + DATA_FILE_NAME;
+        private static SqliteConnection _connection;
+        private bool _disposedValue;
+        private bool _useTransaction;
+        private SqliteTransaction _transaction;
+
+        static BasicSql()
+        {
+        }
+
+        public BasicSql(bool useTransaction = false)
+        {
+            _useTransaction = useTransaction;
+            if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
+            {
+                OpenConnection();
+            }
+        }
+
+        public void BeginTransaction()
+        {
+            if (!_useTransaction)
+            {
+                throw new ApplicationException("Cannot start a transaction when BasicSql was told not to use transactions.");
+            }
+
+            _transaction = _connection.BeginTransaction();
+        }
+
+        public void CommitTransaction()
+        {
+            _transaction.Commit();
+            _transaction = null;
+        }
+
+        public void RollbackTransaction()
+        {
+            _transaction.Rollback();
+            _transaction = null;
+        }
+
+        public void ExecuteNonReader(string sql)
+        {
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        public void ExecuteNonReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    foreach (var pram in parameters)
+                    {
+                        command.Parameters.AddWithValue(pram.Key, pram.Value);
+                    }
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        public void ExecuteReader(string sql, Action<SqliteDataReader> rowAction)
+        {
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            rowAction?.Invoke(reader);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        public void ExecuteReader(string sql, IEnumerable<KeyValuePair<string, string>> parameters, Action<SqliteDataReader> rowAction)
+        {
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    foreach (var pram in parameters)
+                    {
+                        command.Parameters.AddWithValue(pram.Key, pram.Value);
+                    }
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            rowAction?.Invoke(reader);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+
+        public N ExecuteScalar<N>(string sql)
+        {
+            N result = default;
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result = (N)reader[0];
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+            return result;
+        }
+
+        public N ExecuteScalar<N>(string sql, IEnumerable<KeyValuePair<string, string>> parameters)
+        {
+            N result = default;
+            try
+            {
+                using (var command = _connection.CreateCommand())
+                {
+                    if (_useTransaction)
+                    {
+                        command.Transaction = _transaction;
+                    }
+
+                    command.CommandText = sql;
+                    foreach (var pram in parameters)
+                    {
+                        command.Parameters.AddWithValue(pram.Key, pram.Value);
+                    }
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result = (N)reader[0];
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+            return result;
+        }
+
+        private void OpenConnection()
+        {
+            if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
+            {
+                var needsCreating = false;
+                try
+                {
+                    if (!File.Exists(DataFilePath))
+                    {
+                        needsCreating = true;
+                    }
+
+                    _connection = new SqliteConnection($"URI=file:{DataFilePath}");
+                    _connection.Open();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+                if (needsCreating)
+                {
+                    var text = Resources.Load("Database/CreateDatabase") as TextAsset;
+                    ExecuteNonReader(text.text);
+                }
+            }
+        }
+
+        #region IDisposable
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects)
+                    if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
+                    {
+                        _connection.Close();
+                    }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                // TODO: set large fields to null
+                _disposedValue = true;
+            }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~BasicSql()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+    }
+*/

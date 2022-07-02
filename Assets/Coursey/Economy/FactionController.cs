@@ -91,34 +91,34 @@ namespace Economy
                 {
                     basicSql.ExecuteReader(@"SELECT * FROM TradeStation WHERE FactionId = $factionId", new List<KeyValuePair<string, string>>
                     {
-                        new KeyValuePair<string, string>("$factionId", faction.factionId)
+                        new KeyValuePair<string, string>("$factionId", faction.FactionId)
                     }, (rowDataTradeStation) =>
                     {
                         TradeStation newTradeStation = new TradeStation(rowDataTradeStation);
-                        faction.tradeStations.Add(newTradeStation);
+                        faction.TradeStations.Add(newTradeStation);
 
                         //build trade station inventory (NESTED)
                         basicSql.ExecuteReader(@"SELECT * FROM TradeStationInventory WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.tradeStationId)
+                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.TradeStationId)
                         }, (rowDataTradeStationInventory) =>
                         {
-                            newTradeStation.inventoryItems.Add(new EconomyItem(rowDataTradeStationInventory));
+                            newTradeStation.InventoryItems.Add(new EconomyItem(rowDataTradeStationInventory, DataObjectType.TradeStationInventoryItem));
                         });
 
                         //build economy events (NESTED)
                         basicSql.ExecuteReader(@"SELECT * FROM EconomyEventTradeStationLink WHERE TradeStationId = $tradeStationId", new List<KeyValuePair<string, string>>
                         {
-                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.tradeStationId)
+                            new KeyValuePair<string, string>("$tradeStationId", newTradeStation.TradeStationId)
                         }, (rowData) =>
                         {
-                            newTradeStation.economyEvents.Add(new EconomyEvent(rowData));
+                            newTradeStation.EconomyEvents.Add(new EconomyEvent(rowData));
                         });
 
                         //perform trade station operations (NESTED)
                         newTradeStation.UseItems();
                         newTradeStation.ProduceItems();
-                        newTradeStation.CalculatePriceDistribution();
+                        newTradeStation.ReCalculatePriceDistribution();
                         newTradeStation.ExecuteAllTrades();
 #pragma warning disable CS0162 // Unreachable code detected
                         if (_debugThisClass) Debug.Log($"{newTradeStation}");
@@ -164,7 +164,7 @@ namespace Economy
         {
             foreach (Faction faction in factions)
             {
-                faction.GenerateRandomTradeStation(/*economyItems*/);
+                faction.GenerateRandomTradeStation();
             }
         }
         /*public void GenerateRandomTradeRoutes()
@@ -209,19 +209,19 @@ namespace Economy
             }
             var faction = tradeStation.associatedFaction;
             TradeRoute tradeRoute = null;
-            if (faction.tradeStations.Count > 2)
+            if (faction.TradeStations.Count > 2)
             {
                 tradeRoute = new TradeRoute(tradeStation, GetRandomTradeStationExcludingThisOne(tradeStation));
             }
-            else if (faction.tradeStations.Count == 2)
+            else if (faction.TradeStations.Count == 2)
             {
-                tradeRoute = new TradeRoute(faction.tradeStations[0], faction.tradeStations[1]);
+                tradeRoute = new TradeRoute(faction.TradeStations[0], faction.TradeStations[1]);
             }
             else
             {
-                Debug.Log($"A trade route ({faction.factionName} <-> {faction.factionName}) was attempted, " +
+                Debug.Log($"A trade route ({faction.FactionName} <-> {faction.FactionName}) was attempted, " +
                 $"but there aren't enough Trade Stations belonging to them!");
-                tradeRoute = new TradeRoute(faction.tradeStations[0], null);
+                tradeRoute = new TradeRoute(faction.TradeStations[0], null);
             }
             return tradeRoute.TradeRouteValid
                 ? tradeRoute
@@ -244,15 +244,15 @@ namespace Economy
             var faction2 = GetRandomFactionExcludingThisOne(faction1);
             TradeRoute tradeRoute = null;
             if (faction2 == null) return null;
-            if(faction2.tradeStations.Count > 0)
+            if(faction2.TradeStations.Count > 0)
             {
                 //tradeRoute = new TradeRoute(tradeStation, GetRandomTradeStation(faction2));
                 tradeRoute = new TradeRoute(tradeStation, GetRandomTradeStation("4"));
             }
             else
             {
-                Debug.Log($"A trade route ({faction1.factionName} <-> {faction2.factionName}) was attempted, " +
-                $"but there aren't enough Trade Stations belonging to {faction2.factionName}.");
+                Debug.Log($"A trade route ({faction1.FactionName} <-> {faction2.FactionName}) was attempted, " +
+                $"but there aren't enough Trade Stations belonging to {faction2.FactionName}.");
                 tradeRoute = new TradeRoute(tradeStation, null);
             }
             return tradeRoute.TradeRouteValid
@@ -296,19 +296,14 @@ namespace Economy
                 {
                     new KeyValuePair<string, string>("$factionId", factionId)
                 });
-
-            }/*
-
-                return faction.tradeStations.Count > 1
-                    ? faction.tradeStations[MathTools.PseudoRandomIntExclusiveMax(0, faction.tradeStations.Count)]
-                    : faction.tradeStations[0];*/
+            }
             return null;
         }
         public TradeStation GetRandomTradeStationExcludingThisOne(TradeStation exclude)
         {
             TradeStation tradeStation = null;
-            List<TradeStation> tradeStations = exclude.associatedFaction.tradeStations;
-            if (exclude == null || exclude.associatedFaction.tradeStations.Count == 1)
+            List<TradeStation> tradeStations = exclude.associatedFaction.TradeStations;
+            if (exclude == null || exclude.associatedFaction.TradeStations.Count == 1)
             {
                 return null;
             }
@@ -331,170 +326,5 @@ namespace Economy
                 }
             }
         }
-
-        #region SQLite
-        public void SaveData()
-        {
-            using (var basicSql = new BasicSql())
-            {
-                if (GameSettings.RegenerateSQLiteDBsEachRun)
-                {
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS Faction");
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStation");
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeStationInventory");
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS EconomyEventTradeStationLink");
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeRoute");
-                }
-                #region Define SqliteTables
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS Faction (Id INTEGER PRIMARY KEY, Name VARCHAR(100), Description TEXT, IsDisabled INTEGER);
-                ");
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS TradeStation (Id INTEGER PRIMARY KEY, FactionId VARCHAR(3), Name VARCHAR(100), Description TEXT);
-                ");
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS FactionLinks (Id INTEGER PRIMARY KEY, FacID1 VARCHAR(3), FacID2 VARCHAR(3), Reputation INTEGER);
-                ");
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS TradeStationInventory (Id INTEGER PRIMARY KEY, TradeStationId VARCHAR(3), ItemId VARCHAR(3), MaxQuantityOfItem INTEGER, PurchasePrice INTEGER, SalePrice INTEGER, IsSpecialized INTEGER);
-                ");
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS EconomyEventTradeStationLink (Id INTEGER PRIMARY KEY, EventId VARCHAR(3), TradeStationId VARCHAR(3));
-                ");
-                #endregion
-
-                foreach (var faction in factions)
-                {
-                    //check if faction exists with name and add if it doesnt
-                    string nameFac = basicSql.ExecuteScalar(@"
-                    SELECT Name FROM Faction WHERE Name = $name;",
-                    new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>("$name", faction.factionName)
-                    });
-                    if (string.IsNullOrEmpty(nameFac))
-                    {
-                        basicSql.ExecuteNonReader(
-                        "INSERT INTO Faction (Name, Description, IsDisabled) VALUES ($name, $description, $isDisabled)",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$name", faction.factionName),
-                            new KeyValuePair<string, string>("$description", faction.factionDescription),
-                            new KeyValuePair<string, string>("$isDisabled", "False"),
-                        });
-                    }
-
-                    //asign factionid to all factions
-                    string factionId = basicSql.ExecuteScalar(@"
-                    SELECT Id FROM Faction WHERE Name = $name;",
-                    new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>("$name", faction.factionName)
-                    });
-
-                    foreach (var tradeStation in faction.tradeStations)
-                    {
-                        //check if trade station exists in database with name and add if it doesnt
-                        string nameTS = basicSql.ExecuteScalar(@"
-                        SELECT Name FROM TradeStation WHERE Name = $name;",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
-                        });
-                        if (string.IsNullOrEmpty(nameTS))
-                        {
-                            basicSql.ExecuteNonReader(
-                            "INSERT INTO TradeStation (FactionId, Name, Description) VALUES ($factionId, $name, $description)",
-                            new List<KeyValuePair<string, string>>
-                            {
-                                new KeyValuePair<string, string>("$factionId", factionId),
-                                new KeyValuePair<string, string>("$name", tradeStation.tradeStationName),
-                                new KeyValuePair<string, string>("$description", tradeStation.tradeStationDescription)
-                            });
-                        }
-
-                        //assign id to tradestation if it doesnt have one
-                        tradeStation.tradeStationId = string.IsNullOrEmpty(tradeStation.tradeStationId)
-                        ? basicSql.ExecuteScalar(@"SELECT Id FROM TradeStation WHERE Name = $name",
-                        new List<KeyValuePair<string, string>>
-                        {
-                        new KeyValuePair<string, string>("$name", tradeStation.tradeStationName)
-                        })
-                        : tradeStation.tradeStationId;
-
-                        //add trade station inventory to database
-                        List<object[]> data = new List<object[]>();
-                        foreach (var item in tradeStation.inventoryItems)
-                        {
-                            data.Add(new object[] { tradeStation.tradeStationId, item.itemId, item.MaxQuantityOfItem, item.PurchasePrice, item.SalePrice, item.IsSpecialized });
-                        }
-                        var prams = new List<KeyValuePair<string, string>>();
-                        var sql = @"
-                        INSERT INTO	TradeStationInventory
-                        (TradeStationId, ItemId, MaxQuantityOfItem, PurchasePrice, SalePrice, IsSpecialized)
-                        VALUES
-                        ";
-                        var idx = 0;
-                        foreach (var obj in data)
-                        {
-                            sql += idx > 0 ? "," : "";
-                            sql += $"($tradeStationId{idx},$itemId{idx},$maxQuantityOfItem{idx},$purchasePrice{idx},$salePrice{idx},$isSpecialized{idx})";
-                            prams.Add(new KeyValuePair<string, string>($"$tradeStationId{idx}", obj[0].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$itemId{idx}", obj[1].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$maxQuantityOfItem{idx}", obj[2].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$purchasePrice{idx}", obj[3].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$salePrice{idx}", obj[4].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$isSpecialized{idx}", obj[5].ToString()));
-                            idx++;
-                        }
-                        basicSql.ExecuteNonReader(sql + ";", prams);
-                    }
-                }
-            }
-        }
-        /*public void SaveTradeRouteData()
-        {
-            using (var basicSql = new BasicSql())
-            {
-                if (GameSettings.RegenerateSQLiteDBsEachRun)
-                {
-                    basicSql.ExecuteNonReader("DROP TABLE IF EXISTS TradeRoute");
-                }
-
-                basicSql.ExecuteNonReader(@"
-                CREATE TABLE IF NOT EXISTS TradeRoute (Id INTEGER PRIMARY KEY, TradeStationId1 VARCHAR(3), TradeStationId2 VARCHAR(3));
-                ");
-
-                foreach(var tradeRoute in EconomyController.AllTradeRoutes)
-                {
-                    string item1 = basicSql.ExecuteScalar(@"SELECT TradeStationId1 FROM TradeRoute WHERE TradeStationId1 = $id1;",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$id1", tradeRoute.Trade.Item1.tradeStationId)
-                        }
-                    );
-
-                    string item2 = basicSql.ExecuteScalar(@"SELECT TradeStationId2 FROM TradeRoute WHERE TradeStationId2 = $id2;",
-                        new List<KeyValuePair<string, string>>
-                        {
-                            new KeyValuePair<string, string>("$id2", tradeRoute.Trade.Item2.tradeStationId)
-                        }
-                    );
-
-                    if (string.IsNullOrEmpty(item1) || string.IsNullOrEmpty(item2))
-                    {
-                        basicSql.ExecuteNonReader(
-                            "INSERT INTO TradeRoute (TradeStationId1, TradeStationId2) VALUES ($id1, $id2)",
-                            new List<KeyValuePair<string, string>>
-                            {
-                                new KeyValuePair<string, string>("$id1", tradeRoute.Trade.Item1.tradeStationId),
-                                new KeyValuePair<string, string>("$id2", tradeRoute.Trade.Item2.tradeStationId)
-                            }
-                            );
-                    }
-                }
-            }
-        }*/
-        #endregion SQLite
     }
 }

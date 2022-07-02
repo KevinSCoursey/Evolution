@@ -4,17 +4,12 @@ using UnityEngine;
 
 namespace Economy
 {
-    public class EconomyItemController
+    public static class EconomyItemController
     {
         private const bool _debugThisClass = true;
-
-        public List<EconomyItem> items = new List<EconomyItem>();
-
-        public EconomyItemController()//good
-        {
-            Initialize();
-        }
-        public void Initialize()//good
+        public static bool isLoaded { get; private set; } = false;
+        public static List<EconomyItem> items = new List<EconomyItem>();
+        public static void Initialize()//good
         {
             using(new TimedBlock("Adding default economy items", _debugThisClass))
             {
@@ -23,8 +18,9 @@ namespace Economy
                 LogAllEconomyItems();
                 DataBaseInteract.UpdateItemData(items);
             }
+            isLoaded = true;
         }
-        private void AddDefaultEconomyItems()
+        private static void AddDefaultEconomyItems()
         {
             //DEFAULT ITEMS
             EconomyItem itemToAdd = new EconomyItem(
@@ -327,7 +323,7 @@ namespace Economy
                 );
             items.Add(itemToAdd);
         }//good
-        private void LogAllEconomyItems()//good
+        private static void LogAllEconomyItems()//good
         {
             if (_debugThisClass)
             {
@@ -337,14 +333,14 @@ namespace Economy
                 }
             }
         }
-        private void DebugPurposeOnly_RandomlySpecializeItems()//may need to rework how specializations work
+        private static void DebugPurposeOnly_RandomlySpecializeItems()//may need to rework how specializations work
         {
             foreach(Faction faction in FactionController.factions)
             {
                 int[] itemsToSpecialize = MathTools.GetRandomIndexes(items, MathTools.PseudoRandomIntExclusiveMax(3, items.Count / 2));
                 for(int i = 0; i < itemsToSpecialize.Length; i++)
                 {
-                    if (!items[i].GetNamesOfFactionsThatSpecializeInThisItem().Contains(faction.factionName))
+                    if (!items[i].GetNamesOfFactionsThatSpecializeInThisItem().Contains(faction.FactionName))
                     {
                         items[i].AddFactionSpecialization(faction);
                     }

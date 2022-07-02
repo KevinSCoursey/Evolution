@@ -31,13 +31,13 @@ namespace Economy
             //if (_debugThisClass) Debug.Log($"Guid {Item1?.guid} vs {Item2?.guid}");
             if (_debugThisClass && InternalTradeRoute && TradeRouteValid)
             {
-                Debug.Log($"Trade route ({Item1.associatedFaction.factionName} <-> {Item1.associatedFaction.factionName}) has been generated between " +
-                $"{Trade.Item1.tradeStationName} and {Trade.Item2.tradeStationName}");
+                Debug.Log($"Trade route ({Item1.associatedFaction.FactionName} <-> {Item1.associatedFaction.FactionName}) has been generated between " +
+                $"{Trade.Item1.TradeStationName} and {Trade.Item2.TradeStationName}");
             }
             else if (_debugThisClass && !InternalTradeRoute && TradeRouteValid)
             {
-                Debug.Log($"Trade route ({Item1.associatedFaction.factionName} <-> {Item1.associatedFaction.factionName}) has been generated between " +
-                $"{Trade.Item1.tradeStationName} and {Trade.Item2.tradeStationName}");
+                Debug.Log($"Trade route ({Item1.associatedFaction.FactionName} <-> {Item1.associatedFaction.FactionName}) has been generated between " +
+                $"{Trade.Item1.TradeStationName} and {Trade.Item2.TradeStationName}");
             }
             else if (_debugThisClass && !TradeRouteValid)
             {
@@ -54,18 +54,18 @@ namespace Economy
 
             if (itemsForItem1.Count < numItemsToTrade)
             {
-                Debug.Log($"{Trade.Item1.tradeStationName} reevaluated their interests.");
+                Debug.Log($"{Trade.Item1.TradeStationName} reevaluated their interests.");
                 itemsForItem1.AddRange(Trade.Item1.ItemsOfInterest(0.5f));
             }
             if (itemsForItem2.Count < numItemsToTrade)
             {
-                Debug.Log($"{Trade.Item2.tradeStationName} reevaluated their interests.");
+                Debug.Log($"{Trade.Item2.TradeStationName} reevaluated their interests.");
                 itemsForItem2.AddRange(Trade.Item2.ItemsOfInterest(0.5f));
             }
             if (itemsForItem1.Count == 0 || itemsForItem2.Count == 0)
             {
-                Debug.Log($"A trade between {Trade.Item1.associatedFaction.factionName}'s {Trade.Item1.tradeStationName} and " +
-                    $"{Trade.Item2.associatedFaction.factionName}'s {Trade.Item2.tradeStationName} wasn't able to be completed. " +
+                Debug.Log($"A trade between {Trade.Item1.associatedFaction.FactionName}'s {Trade.Item1.TradeStationName} and " +
+                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} wasn't able to be completed. " +
                     $"There were no mutually beneficial items of interest this time.");
             }
             else
@@ -90,27 +90,27 @@ namespace Economy
                 foreach (EconomyItem item in itemsToTradeItem1)
                 {
                     //no point trading item if they both need it
-                    if(itemsForItem2.Find(_ => _.itemName == item.itemName) == null)
+                    if(itemsForItem2.Find(_ => _.EconomyItemName == item.EconomyItemName) == null)
                     {
                         Trade.Item1.AI_Buy(item, Trade.Item2);
                     }
                     else
                     {
-                        Debug.Log($"Both {Trade.Item1.tradeStationName} and {Trade.Item2.tradeStationName} " +
-                            $"need {item.itemName}, so it wasn't traded.");
+                        Debug.Log($"Both {Trade.Item1.TradeStationName} and {Trade.Item2.TradeStationName} " +
+                            $"need {item.EconomyItemName}, so it wasn't traded.");
                     }
                 }
                 foreach (EconomyItem item in itemsToTradeItem2)
                 {
                     //no point trading item if they both need it
-                    if (itemsForItem1.Find(_ => _.itemName == item.itemName) == null)
+                    if (itemsForItem1.Find(_ => _.EconomyItemName == item.EconomyItemName) == null)
                     {
                         Trade.Item2.AI_Buy(item, Trade.Item1);
                     }
                     else
                     {
-                        Debug.Log($"Both {Trade.Item2.tradeStationName} and {Trade.Item1.tradeStationName} " +
-                            $"need {item.itemName}, so it wasn't traded.");
+                        Debug.Log($"Both {Trade.Item2.TradeStationName} and {Trade.Item1.TradeStationName} " +
+                            $"need {item.EconomyItemName}, so it wasn't traded.");
                     }
                 }
             }
@@ -154,15 +154,15 @@ namespace Economy
             {
                 if (InternalTradeRoute)
                 {
-                    str = $"Trade Route: ({Trade.Item1.associatedFaction.factionName} <-> {Trade.Item1.associatedFaction.factionName})\n{Trade.Item1.associatedFaction.factionName}'s " +
-                    $"{Trade.Item1.tradeStationName} Trade Station ({Trade.Item1.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation}) <-> " +
-                    $"{Trade.Item2.associatedFaction.factionName}'s {Trade.Item2.tradeStationName} ({Trade.Item2.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation})";
+                    str = $"Trade Route: ({Trade.Item1.associatedFaction.FactionName} <-> {Trade.Item1.associatedFaction.FactionName})\n{Trade.Item1.associatedFaction.FactionName}'s " +
+                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation}) <-> " +
+                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} ({Trade.Item2.internalTradeRoutes.Count + 1}/{GameSettings.MaxInternalTradeRoutesPerTradeStation})";
                 }
                 else
                 {
-                    str = $"Trade Route: ({Trade.Item1.associatedFaction.factionName} <-> {Trade.Item2.associatedFaction.factionName})\n{Trade.Item1.associatedFaction.factionName}'s " +
-                    $"{Trade.Item1.tradeStationName} Trade Station ({Trade.Item1.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation}) <-> " +
-                    $"{Trade.Item2.associatedFaction.factionName}'s {Trade.Item2.tradeStationName} Trade Station ({Trade.Item2.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation})";
+                    str = $"Trade Route: ({Trade.Item1.associatedFaction.FactionName} <-> {Trade.Item2.associatedFaction.FactionName})\n{Trade.Item1.associatedFaction.FactionName}'s " +
+                    $"{Trade.Item1.TradeStationName} Trade Station ({Trade.Item1.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation}) <-> " +
+                    $"{Trade.Item2.associatedFaction.FactionName}'s {Trade.Item2.TradeStationName} Trade Station ({Trade.Item2.externalTradeRoutes.Count + 1}/{GameSettings.MaxExternalTradeRoutesPerTradeStation})";
                 }
             }
             else

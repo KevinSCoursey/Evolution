@@ -21,11 +21,12 @@ namespace Economy
         public static int AverageNumItemsExchangedPerTrade = 3;
         public static float PercentTaxExternalTrades = 1.5f;
         public static float SameFactionPriceDiscount = 1.5f;
+        public static int AverageMaxQuantityOfItem = 10000;
 
         public static float MinutesGameWillRunFloat = 1f;
 
 
-        public static bool RegenerateSQLiteDBsEachRun = false;//true;
+        public static bool RegenerateSQLiteDBsEachRun = true;
         public static int NumTradeStationsPerDBBlock = 1000;
         public static bool LoadSettings()
         {

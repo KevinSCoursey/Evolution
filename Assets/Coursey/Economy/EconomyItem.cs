@@ -7,16 +7,16 @@ using Mono.Data.Sqlite;
 
 namespace Economy
 {
-    public class EconomyItem : IEconomyItem
+    public class EconomyItem //: IEconomyItem
     {
-        public string itemName
+        public string EconomyItemName
         {
             get { return _itemName; }
             set { _itemName = string.IsNullOrEmpty(value) ? _itemName = "Unnamed item" : _itemName = value; }
         }
         private string _itemName = string.Empty;
 
-        public string itemDescription
+        public string EconomyItemDescription
         {
             get { return _itemDescription; }
             set { _itemDescription = string.IsNullOrEmpty(value) ? "No description provided" : value; }
@@ -40,7 +40,7 @@ namespace Economy
             get { return _PurchasePrice; }
             set
             {
-                _PurchasePrice = Mathf.Clamp(value, priceFloor, priceRoof);
+                _PurchasePrice = Mathf.Clamp(value, PriceFloor, PriceRoof);
             }
         }
         private int _PurchasePrice = 1;
@@ -49,41 +49,41 @@ namespace Economy
             get { return _SalePrice; }
             set
             {
-                _SalePrice = Mathf.Clamp(value, priceFloor, priceRoof);
+                _SalePrice = Mathf.Clamp(value, PriceFloor, PriceRoof);
             }
         }
         private int _SalePrice = 1;
 
-        public int priceDefault
+        public int PriceDefault
         {
             get { return _PriceDefault; }
             set { _PriceDefault = value; }
         }
         private int _PriceDefault = 1;
 
-        public int priceFloor
+        public int PriceFloor
         {
             get { return _PriceFloor; }
             set
             {
-                if (value > priceRoof) _PriceFloor = priceRoof;
+                if (value > PriceRoof) _PriceFloor = PriceRoof;
                 else _PriceFloor = value < 0 ? 0 : value;
             }
         }
         private int _PriceFloor = 1;
 
-        public int priceRoof
+        public int PriceRoof
         {
             get { return _PriceRoof; }
             set
             {
-                if (value < priceFloor) _PriceRoof = priceFloor;
+                if (value < PriceFloor) _PriceRoof = PriceFloor;
                 else _PriceRoof = value;
             }
         }
         private int _PriceRoof = 1;
 
-        public int rarityInt
+        public int RarityInt
         {
             get { return _RarityInt; }
             set
@@ -95,13 +95,13 @@ namespace Economy
 
         public int QuantityOfItem
         {
-            get { return _QuantityOfItem;  }
+            get { return _quantityOfItem;  }
             set
             {
-                _QuantityOfItem = Mathf.Clamp(value, 0, MaxQuantityOfItem);
+                _quantityOfItem = Mathf.Clamp(value, 0, MaxQuantityOfItem);
             }
         }
-        private int _QuantityOfItem = 1;
+        private int _quantityOfItem = 1;
         public int MaxQuantityOfItem
         {
             get { return _MaxQuantityOfItem; }
@@ -112,13 +112,13 @@ namespace Economy
         }
         private int _MaxQuantityOfItem = 1;
 
-        public ItemClass itemClass
+        public ItemClass EconomyItemClass
         {
             get { return _ClassOfItem; }
             set { _ClassOfItem = value; }
         }
 
-        public string itemId;
+        public string EconomyItemId;
         private ItemClass _ClassOfItem = ItemClass.Unknown;
         private SqliteDataReader rowDataTS;
 
@@ -126,7 +126,7 @@ namespace Economy
         {
             return FactionsThatSpecializeInThisItem == null || FactionsThatSpecializeInThisItem.Count == 0
                 ? "None"
-                : string.Join("\n", FactionsThatSpecializeInThisItem.Select( x => x.factionName));
+                : string.Join("\n", FactionsThatSpecializeInThisItem.Select( x => x.FactionName));
         }
         public void AddFactionSpecialization(Faction faction)
         {
@@ -135,68 +135,92 @@ namespace Economy
         public override string ToString()
         {
             return
-                $"Item name: {itemName} ({itemClass})\n" +
-                $"Item description: {itemDescription}\n" +
-                $"Price range of {priceFloor} - {priceRoof} (normally {priceDefault}) with a rarity of {rarityInt}. " +
+                $"Item name: {EconomyItemName} ({EconomyItemClass})\n" +
+                $"Item description: {EconomyItemDescription}\n" +
+                $"Price range of {PriceFloor} - {PriceRoof} (normally {PriceDefault}) with a rarity of {RarityInt}. " +
                 $"Factions that specialize in this item: \n{GetNamesOfFactionsThatSpecializeInThisItem()}\n\n";
         }
         public EconomyItem(ItemClass classOfItem, string name, string description, int purchasePrice, int salePrice, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
-            itemClass = classOfItem;
-            itemName = name;
-            itemDescription = description;
-            PurchasePrice = purchasePrice;
-            SalePrice = salePrice;
-            this.priceDefault = priceDefault;
-            this.priceFloor = priceFloor;
-            this.priceRoof = priceRoof;
-            this.rarityInt = rarityInt;
-            MaxQuantityOfItem = maxQuantityOfItem;
+            EconomyItemClass = classOfItem;
+            EconomyItemName = name;
+            EconomyItemDescription = description;
+            this.PurchasePrice = purchasePrice;
+            this.SalePrice = salePrice;
+            this.PriceDefault = priceDefault;
+            this.PriceFloor = priceFloor;
+            this.PriceRoof = priceRoof;
+            this.RarityInt = rarityInt;
+            this.MaxQuantityOfItem = maxQuantityOfItem;
         }
         public EconomyItem(ItemClass classOfItem, string name, string description, int priceDefault, int priceFloor, int priceRoof, int rarityInt, int maxQuantityOfItem)
         {
-            itemClass = classOfItem;
-            itemName = name;
-            itemDescription = description;
-            this.priceDefault = priceDefault;
-            this.priceFloor = priceFloor;
-            this.priceRoof = priceRoof;
-            this.rarityInt = rarityInt;
-            MaxQuantityOfItem = maxQuantityOfItem;
+            EconomyItemClass = classOfItem;
+            EconomyItemName = name;
+            EconomyItemDescription = description;
+            this.PriceDefault = priceDefault;
+            this.PriceFloor = priceFloor;
+            this.PriceRoof = priceRoof;
+            this.RarityInt = rarityInt;
+            this.MaxQuantityOfItem = maxQuantityOfItem;
         }
         public EconomyItem(EconomyItem economyItem)
         {
-            itemId = economyItem.itemId;
+            EconomyItemId = economyItem.EconomyItemId;
             IsSpecialized = economyItem.IsSpecialized;
-            itemClass = economyItem.itemClass;
-            itemName = economyItem.itemName;
-            itemDescription = economyItem.itemDescription;
+            EconomyItemClass = economyItem.EconomyItemClass;
+            EconomyItemName = economyItem.EconomyItemName;
+            EconomyItemDescription = economyItem.EconomyItemDescription;
             SalePrice = economyItem.SalePrice;
-            priceDefault = economyItem.priceDefault;
-            priceFloor = economyItem.priceFloor;
-            priceRoof = economyItem.priceRoof;
+            PriceDefault = economyItem.PriceDefault;
+            PriceFloor = economyItem.PriceFloor;
+            PriceRoof = economyItem.PriceRoof;
             PurchasePrice= economyItem.PurchasePrice;
-            rarityInt = economyItem.rarityInt;
+            RarityInt = economyItem.RarityInt;
             FactionsThatSpecializeInThisItem = economyItem.FactionsThatSpecializeInThisItem;
             MaxQuantityOfItem = economyItem.MaxQuantityOfItem;
         }
 
-        public EconomyItem(SqliteDataReader rowData)
+        public EconomyItem(SqliteDataReader rowData, DataObjectType dataObjectType)//two different row datas being passed to this!!!
         {
-            var fieldCount = rowData.FieldCount;
-            for (var currentFieldIdx = 0; currentFieldIdx < fieldCount; currentFieldIdx++)
+            if(dataObjectType == DataObjectType.EconomyItem)
             {
-                Debug.Log(rowData.GetName(currentFieldIdx));
+                /*var fieldCount = rowData.FieldCount;
+                string debug = "";
+                for (var currentFieldIdx = 0; currentFieldIdx < fieldCount; currentFieldIdx++)
+                {
+                    debug += $"{rowData.GetName(currentFieldIdx)} - {rowData[currentFieldIdx].ToString()}\n";
+                }
+                Debug.Log(debug);*/
+                EconomyItemId = rowData["EconomyItemId"].ToString();
+                EconomyItemName = rowData["EconomyItemName"].ToString();
+                EconomyItemDescription = rowData["EconomyItemDescription"].ToString();
+                EconomyItemClass = Enum.Parse<ItemClass>(rowData["EconomyItemClassId"].ToString());
+                RarityInt = int.Parse(rowData["RarityInt"].ToString());
+                PriceDefault = int.Parse(rowData["PriceDefault"].ToString());
+                PriceFloor = int.Parse(rowData["PriceFloor"].ToString());
+                PriceRoof = int.Parse(rowData["PriceRoof"].ToString());
             }
-            itemClass = Enum.Parse<ItemClass>(rowData["ItemClassId"].ToString());
-            itemId = rowData["Id"].ToString();
-            MaxQuantityOfItem = int.Parse(rowData["MaxQuantityOfItem"].ToString());
-            PurchasePrice = int.Parse(rowData["PurchasePrice"].ToString());
-            SalePrice = int.Parse(rowData["SalePrice"].ToString());
-            IsSpecialized = rowData["IsSpecialized"].ToString().Equals("True");
+            if (dataObjectType == DataObjectType.TradeStationInventoryItem)
+            {
+                var fieldCount = rowData.FieldCount;
+                string debug = "";
+                for (var currentFieldIdx = 0; currentFieldIdx < fieldCount; currentFieldIdx++)
+                {
+                    debug += $"{rowData.GetName(currentFieldIdx)} - {rowData[currentFieldIdx].ToString()}\n";
+                }
+                Debug.Log($"testtesttest---{debug}");
+                EconomyItemId = rowData["EconomyItemId"].ToString();
+                EconomyItemName = rowData["EconomyItemName"].ToString();
+                QuantityOfItem = int.Parse(rowData["QuantityOfItem"].ToString());
+                MaxQuantityOfItem = int.Parse(rowData["MaxQuantityOfItem"].ToString());
+                PurchasePrice = int.Parse(rowData["MaxQuantityOfItem"].ToString());
+                SalePrice = int.Parse(rowData["MaxQuantityOfItem"].ToString());
+                IsSpecialized = bool.Parse(rowData["IsSpecialized"].ToString());
+            }
         }
     }
-    public interface IEconomyItem
+    /*public interface IEconomyItem
     {
         public string itemName { get; set; }
         public string itemDescription { get; set; }
@@ -210,7 +234,7 @@ namespace Economy
         public int QuantityOfItem { get; set; }
         public int MaxQuantityOfItem { get; set; }
         public ItemClass itemClass { get; set; }
-    }
+    }*/
 
     public enum ItemClass
     {
