@@ -74,7 +74,7 @@ namespace Economy
             List<TradeStation> tradeStations = new();
             foreach (var faction in Factions)
             {
-                using (new TimedBlock("ASDF :: LoadTradeStationsForFaction")) ;
+                using (new TimedBlock("ASDF :: LoadTradeStationsForFaction"))
                     tradeStations = DataBaseInteract.LoadTradeStationsForFaction(faction.FactionId);//doesnt have inventory loaded here?
 #pragma warning disable CS0162 // Unreachable code detected
                 if (_debugThisClass)

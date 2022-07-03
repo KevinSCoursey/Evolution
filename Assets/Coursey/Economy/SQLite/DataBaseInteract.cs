@@ -10,7 +10,7 @@ namespace Economy
     //https://www.sqlitetutorial.net/sqlite-index/
     public class DataBaseInteract
     {
-        private static bool _debugThisClass = false;
+        private static bool _debugThisClass = true;
         public static void ClearDataBase()
         {
             using (new TimedBlock("Clearing all data in database", _debugThisClass))
@@ -297,7 +297,7 @@ namespace Economy
                 }
             }
         }
-        public static void UpdateTradeStationData(List<TradeStation> tradeStations)
+        public static void UpdateTradeStationData(List<TradeStation> tradeStationList)
         {
             using (new TimedBlock("Update multiple trade stations data in database", _debugThisClass))
             {
@@ -305,82 +305,97 @@ namespace Economy
                 {
                     List<TradeStation> tradeStationsToAdd = new();
                     List<TradeStation> tradeStationsToUpdate = new();
-                    //split trade stations into a list of adding and a list of updating
-                    foreach (var tradeStation in tradeStations)
+
+                    var batchSize = 400;
+                    var start = 0;
+                    while (start < tradeStationList.Count)
                     {
-                        //if trade station doesnt have an id, assign it one if it exists in database, will still be null if it doesnt
-                        tradeStation.TradeStationId = string.IsNullOrEmpty(tradeStation.TradeStationId)
-                        ? basicSql.ExecuteScalar(@"
-                        SELECT TradeStationId FROM TradeStation WHERE TradeStationName = $tradeStationName;",
-                        new List<KeyValuePair<string, string>>
+                        var tradeStations = new List<TradeStation>();
+                        for (var currentIdx = 0; currentIdx < batchSize && start + currentIdx < tradeStationList.Count; currentIdx++)
                         {
-                            new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName)
-                        })
-                        : tradeStation.TradeStationId;
-
-                        //if trade station still doesnt have an id, it doesnt exist in database. add it and assign an id
-                        if (string.IsNullOrEmpty(tradeStation.TradeStationId))
-                        {
-                            tradeStationsToAdd.Add(tradeStation);
+                            tradeStations.Add(tradeStationList[start + currentIdx]);
                         }
+                        start += batchSize;
 
-                        //if trade station now has an id, then it does exist in database and should be updated vice added
-                        else
+                        //split trade stations into a list of adding and a list of updating
+                        foreach (var tradeStation in tradeStations)
                         {
-                            tradeStationsToUpdate.Add(tradeStation);
-                        }
-                    }
-
-                    //add the applicable new trade stations to the database
-                    if (tradeStationsToAdd.Count > 0)
-                    {
-                        List<object[]> data = new List<object[]>();
-                        foreach (var tradeStation in tradeStationsToAdd)
-                        {
-                            data.Add(new object[] { tradeStation.FactionId, tradeStation.TradeStationName, tradeStation.TradeStationDescription, tradeStation.TradeStationMoney });
-                        }
-                        var prams = new List<KeyValuePair<string, string>>();
-                        var sql = @"
-                        INSERT INTO	TradeStation
-                        (FactionId, TradeStationName, TradeStationDescription, TradeStationMoney)
-                        VALUES";
-                        var idx = 0;
-                        foreach (var obj in data)
-                        {
-                            sql += idx > 0 ? "," : "";
-                            sql += $"($factionId{idx},$tradeStationName{idx},$tradeStationDescription{idx},$tradeStationMoney{idx})";
-                            prams.Add(new KeyValuePair<string, string>($"$factionId{idx}", obj[0].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$tradeStationName{idx}", obj[1].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$tradeStationDescription{idx}", obj[2].ToString()));
-                            prams.Add(new KeyValuePair<string, string>($"$tradeStationMoney{idx}", obj[3].ToString()));
-                            idx++;
-                        }
-                        sql += "ON CONFLICT DO NOTHING";
-                        basicSql.ExecuteNonReader(sql, prams);
-
-                        //assign the newly added trade station its appropriate id
-                        foreach (var tradeStation in tradeStationsToAdd)
-                        {
-                            tradeStation.TradeStationId = basicSql.ExecuteScalar(@"
+                            //if trade station doesnt have an id, assign it one if it exists in database, will still be null if it doesnt
+                            tradeStation.TradeStationId = string.IsNullOrEmpty(tradeStation.TradeStationId)
+                            ? basicSql.ExecuteScalar(@"
                             SELECT TradeStationId FROM TradeStation WHERE TradeStationName = $tradeStationName;",
                             new List<KeyValuePair<string, string>>
                             {
-                            new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName)
-                            });
-                            if (_debugThisClass)
+                                new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName)
+                            })
+                            : tradeStation.TradeStationId;
+
+                            //if trade station still doesnt have an id, it doesnt exist in database. add it and assign an id
+                            if (string.IsNullOrEmpty(tradeStation.TradeStationId))
                             {
-                                Debug.Log($"TradeStation {tradeStation.TradeStationName} was added to the database with the following information:\n{tradeStation}");
+                                tradeStationsToAdd.Add(tradeStation);
+                            }
+
+                            //if trade station now has an id, then it does exist in database and should be updated vice added
+                            else
+                            {
+                                tradeStationsToUpdate.Add(tradeStation);
                             }
                         }
 
+                        //add the applicable new trade stations to the database
+                        if (tradeStationsToAdd.Count > 0)
+                        {
+                            List<object[]> data = new List<object[]>();
+                            foreach (var tradeStation in tradeStationsToAdd)
+                            {
+                                data.Add(new object[] { tradeStation.FactionId, tradeStation.TradeStationName, tradeStation.TradeStationDescription, tradeStation.TradeStationMoney });
+                            }
+                            var prams = new List<KeyValuePair<string, string>>();
+                            var sql = @"
+                            INSERT INTO	TradeStation
+                            (FactionId, TradeStationName, TradeStationDescription, TradeStationMoney)
+                            VALUES";
+                            var idx = 0;
+                            foreach (var obj in data)
+                            {
+                                sql += idx > 0 ? "," : "";
+                                sql += $"($factionId{idx},$tradeStationName{idx},$tradeStationDescription{idx},$tradeStationMoney{idx})";
+                                prams.Add(new KeyValuePair<string, string>($"$factionId{idx}", obj[0].ToString()));
+                                prams.Add(new KeyValuePair<string, string>($"$tradeStationName{idx}", obj[1].ToString()));
+                                prams.Add(new KeyValuePair<string, string>($"$tradeStationDescription{idx}", obj[2].ToString()));
+                                prams.Add(new KeyValuePair<string, string>($"$tradeStationMoney{idx}", obj[3].ToString()));
+                                idx++;
+                            }
+                            sql += "ON CONFLICT DO NOTHING";
+                            basicSql.ExecuteNonReader(sql, prams);
+
+                            //assign the newly added trade station its appropriate id
+                            foreach (var tradeStation in tradeStationsToAdd)
+                            {
+                                tradeStation.TradeStationId = basicSql.ExecuteScalar(@"
+                                SELECT TradeStationId FROM TradeStation WHERE TradeStationName = $tradeStationName;",
+                                new List<KeyValuePair<string, string>>
+                                {
+                                new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName)
+                                });
+                                if (_debugThisClass)
+                                {
+                                    Debug.Log($"TradeStation {tradeStation.TradeStationName} was added to the database with the following information:\n{tradeStation}");
+                                }
+                            }
+                        }
                     }
 
                     //update the applicable pre-existing trade stations in the database
                     if (tradeStationsToUpdate.Count > 0)
                     {
-                        foreach (var tradeStation in tradeStationsToUpdate)
+                        using (new TimedBlock("ASDF :: LOWER TRANS"))
                         {
-                            basicSql.ExecuteNonReader(@"
+                            basicSql.BeginTransaction();
+                            foreach (var tradeStation in tradeStationsToUpdate)
+                            {
+                                basicSql.ExecuteNonReader(@"
                             UPDATE TradeStation
                             SET FactionId = $factionId, TradeStationName = $tradeStationName, TradeStationDescription = $tradeStationDescription
                             WHERE TradeStationId = $tradeStationId;
@@ -391,10 +406,12 @@ namespace Economy
                                 new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName),
                                 new KeyValuePair<string, string>("$tradeStationDescription", tradeStation.TradeStationDescription)
                             });
-                            if (_debugThisClass)
-                            {
-                                Debug.Log($"TradeStation {tradeStation} was updated in the database with the following information:\n{tradeStation}");
+                                if (_debugThisClass)
+                                {
+                                    Debug.Log($"TradeStation {tradeStation} was updated in the database with the following information:\n{tradeStation}");
+                                }
                             }
+                            basicSql.CommitTransaction();
                         }
                     }
                 }
@@ -431,8 +448,9 @@ namespace Economy
         {
             using (new TimedBlock("Update multiple trade station inventory data in database", _debugThisClass))
             {
-                using (var basicSql = new BasicSql())
+                using (var basicSql = new BasicSql(true))
                 {
+                    basicSql.BeginTransaction();
                     foreach(var tradeStation in tradeStations)
                     {
                         foreach (var item in tradeStation.InventoryItems)
@@ -454,6 +472,7 @@ namespace Economy
                             });
                         }
                     }
+                    basicSql.CommitTransaction();
                 }
             }
         }//Using this one is 4x faster
@@ -604,8 +623,11 @@ namespace Economy
                     //update the applicable pre-existing items in the database
                     if (itemsToUpdate.Count > 0)
                     {
+
                         foreach (var item in itemsToUpdate)
                         {
+                            basicSql.UseTransaction = true;
+                            basicSql.BeginTransaction();
                             basicSql.ExecuteNonReader(@"
                             UPDATE EconomyItem
                             SET EconomyItemName = $economyItemName, EconomyItemDescription = $economyItemDescription, EconomyItemClassId = $economyItemClassId, RarityInt = $rarityInt, PriceDefault = $priceDefault, PriceFloor = $priceFloor, PriceRoof = $priceRoof
@@ -625,6 +647,8 @@ namespace Economy
                             {
                                 Debug.Log($"EconomyItem {item.EconomyItemName} was updated in the database with the following information:\n{item}");
                             }
+                            basicSql.CommitTransaction();
+                            basicSql.UseTransaction = false;
                         }
                         
                     }
@@ -763,6 +787,8 @@ namespace Economy
                     //update the applicable pre-existing events in the database
                     if (eventsToUpdate.Count > 0)
                     {
+                        basicSql.UseTransaction = true;
+                        basicSql.BeginTransaction();
                         foreach (var eEvent in eventsToUpdate)
                         {
                             basicSql.ExecuteNonReader(@"
@@ -780,6 +806,8 @@ namespace Economy
                                 Debug.Log($"EconomyEvent {eEvent.EconomyEventName} was updated in the database with the following information:\n{eEvent}");
                             }
                         }
+                        basicSql.CommitTransaction();
+                        basicSql.UseTransaction = false;
                     }
                 }
             }

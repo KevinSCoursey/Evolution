@@ -43,7 +43,7 @@ namespace Economy
         private static SqliteConnection _connection;
         private bool _disposedValue;
         private static string DataPath = Application.persistentDataPath;
-        private bool _useTransaction;
+        public bool UseTransaction;
         private SqliteTransaction _transaction;
 
         static BasicSql()
@@ -51,7 +51,7 @@ namespace Economy
         }
         public BasicSql(bool useTransaction = false)
         {
-            _useTransaction = useTransaction;
+            UseTransaction = useTransaction;
             if (_connection == null || _connection.State == System.Data.ConnectionState.Closed)
             {
                 OpenConnection();
@@ -59,7 +59,7 @@ namespace Economy
         }
         public void BeginTransaction()
         {
-            if (!_useTransaction)
+            if (!UseTransaction)
             {
                 throw new ApplicationException("Cannot start a transaction when BasicSql was told not to use transactions.");
             }
@@ -86,7 +86,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -110,7 +110,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -134,7 +134,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -164,7 +164,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -195,7 +195,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -223,7 +223,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
@@ -259,7 +259,7 @@ namespace Economy
             {
                 using (var command = _connection.CreateCommand())
                 {
-                    if (_useTransaction)
+                    if (UseTransaction)
                     {
                         command.Transaction = _transaction;
                     }
