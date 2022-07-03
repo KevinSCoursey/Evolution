@@ -10,7 +10,7 @@ namespace Economy
     {
         public static void GameLoop()
         {
-
+            
         }
         /*public static bool DoesTradeRouteExist(TradeRoute tradeRoute)
         {

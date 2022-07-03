@@ -10,7 +10,7 @@ namespace Economy
     //https://www.sqlitetutorial.net/sqlite-index/
     public class DataBaseInteract
     {
-        private static bool _debugThisClass = false;//true;
+        private static bool _debugThisClass = false;
         public static void ClearDataBase()
         {
             using (new TimedBlock("Clearing all data in database", _debugThisClass))
@@ -53,16 +53,14 @@ namespace Economy
                     CREATE TABLE IF NOT EXISTS Faction (FactionId INTEGER PRIMARY KEY, FactionName VARCHAR(100) UNIQUE NOT NULL, FactionDescription TEXT NOT NULL,
                     IsDisabled INTEGER NOT NULL);
 
-                    CREATE TABLE IF NOT EXISTS TradeStation (TradeStationId INTEGER PRIMARY KEY, FactionId VARCHAR(3) NOT NULL, TradeStationName VARCHAR(100) UNIQUE NOT NULL, TradeStationDescription TEXT NOT NULL);
+                    CREATE TABLE IF NOT EXISTS TradeStation (TradeStationId INTEGER PRIMARY KEY, FactionId VARCHAR(3) NOT NULL, TradeStationName VARCHAR(100) UNIQUE NOT NULL, TradeStationDescription TEXT NOT NULL, TradeStationMoney INTEGER NOT NULL);
 
                     CREATE TABLE IF NOT EXISTS FactionLinks (FactionLinkId INTEGER PRIMARY KEY, FactionId1 VARCHAR(3) NOT NULL, FactionId2 VARCHAR(3) NOT NULL,
-                    Reputation INTEGER NOT NULL, UNIQUE (FacId1, FacId2));
+                    Reputation INTEGER NOT NULL, UNIQUE (FactionId1, FactionId2));
 
                     CREATE TABLE IF NOT EXISTS TradeStationInventory (TradeStationInventoryId INTEGER PRIMARY KEY, TradeStationId VARCHAR(3) NOT NULL, EconomyItemId VARCHAR(3) NOT NULL,
                     QuantityOfItem INTEGER NOT NULL, MaxQuantityOfItem INTEGER NOT NULL, PurchasePrice INTEGER NOT NULL, SalePrice INTEGER NOT NULL,
                     IsSpecialized INTEGER NOT NULL, UNIQUE (TradeStationId, EconomyItemId));
-
-                    CREATE INDEX IF NOT EXISTS idx_TradeStationInventory__TradeStationId_EconomyItemId ON TradeStationInventory(TradeStationId, EconomyItemId);
 
                     CREATE TABLE IF NOT EXISTS EconomyEventTradeStationLink (EconomyEventTradeStationLinkId INTEGER PRIMARY KEY, EconomyEventId VARCHAR(3) UNIQUE NOT NULL, TradeStationId VARCHAR(3) NOT NULL,
                     UNIQUE (EconomyEventId, TradeStationId));
@@ -72,7 +70,17 @@ namespace Economy
 
                     CREATE TABLE IF NOT EXISTS EconomyEvent (EconomyEventId INTEGER PRIMARY KEY, EconomyEventName VARCHAR(100) UNIQUE NOT NULL, EconomyEventDescription TEXT UNIQUE NOT NULL);
 
-                    CREATE TABLE IF NOT EXISTS EconomyEventItemClassLink (EconomyEventItemClassLinkId INTEGER PRIMARY KEY, EconomyEventId CHAR(10) NOT NULL, EconomyItemClassId CHAR(10) NOT NULL, UNIQUE (EconomyEventId, EconomyItemClassId));");
+                    CREATE TABLE IF NOT EXISTS EconomyEventItemClassLink (EconomyEventItemClassLinkId INTEGER PRIMARY KEY, EconomyEventId CHAR(10) NOT NULL, EconomyItemClassId CHAR(10) NOT NULL, UNIQUE (EconomyEventId, EconomyItemClassId));
+
+                    CREATE INDEX IF NOT EXISTS idx_TradeStationInventory__TradeStationId_EconomyItemId ON TradeStationInventory(TradeStationId, EconomyItemId);
+                    CREATE INDEX IF NOT EXISTS idx_EconomyEvent__EconomyEventName ON EconomyEvent(EconomyEventName);
+                    CREATE INDEX IF NOT EXISTS idx_EconomyItem__EconomyItemClassId ON EconomyItem(EconomyItemClassId);
+                    CREATE INDEX IF NOT EXISTS idx_EconomyItem__EconomyItemName ON EconomyItem(EconomyItemName);
+                    CREATE INDEX IF NOT EXISTS idx_TradeStation__FactionId ON TradeStation(FactionId);
+                    CREATE INDEX IF NOT EXISTS idx_TradeStation__TradeStationName ON TradeStation(TradeStationName);
+                    CREATE INDEX IF NOT EXISTS idx_Faction__FactionName ON Faction(FactionName);
+                    ");
+
                 }
             }
         }
@@ -251,13 +259,14 @@ namespace Economy
                     if (string.IsNullOrEmpty(tradeStation.TradeStationId))
                     {
                         tradeStation.TradeStationId = basicSql.ExecuteScalar(@"
-                        INSERT INTO TradeStation (FactionId, TradeStationName, TradeStationDescription) VALUES ($factionId, $tradeStationName, $tradeStationDescription);
+                        INSERT INTO TradeStation (FactionId, TradeStationName, TradeStationDescription) VALUES ($factionId, $tradeStationName, $tradeStationDescription, $tradeStationMoney);
                         SELECT last_insert_rowid();",
                         new List<KeyValuePair<string, string>>
                         {
                             new KeyValuePair<string, string>("$factionId", tradeStation.TradeStationId),
                             new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName),
-                            new KeyValuePair<string, string>("$tradeStationDescription", tradeStation.TradeStationDescription)
+                            new KeyValuePair<string, string>("$tradeStationDescription", tradeStation.TradeStationDescription),
+                            new KeyValuePair<string, string>("$tradeStationMoney", tradeStation.TradeStationMoney.ToString())
                             });
                         if (_debugThisClass)
                         {
@@ -270,14 +279,15 @@ namespace Economy
                     {
                         basicSql.ExecuteNonReader(@"
                         UPDATE TradeStation
-                        SET FactionId = $factionId, TradeStationName = $tradeStationName, TradeStationDescription = $tradeStationDescription
+                        SET FactionId = $factionId, TradeStationName = $tradeStationName, TradeStationDescription = $tradeStationDescription, TradeStationMoney = $tradeStationMoney
                         WHERE TradeStationId = $tradeStationId;
                         ", new List<KeyValuePair<string, string>>
                         {
                             new KeyValuePair<string, string>("$tradeStationId", tradeStation.TradeStationId),
                             new KeyValuePair<string, string>("$factionId", tradeStation.FactionId),
                             new KeyValuePair<string, string>("$tradeStationName", tradeStation.TradeStationName),
-                            new KeyValuePair<string, string>("$tradeStationDescription", tradeStation.TradeStationDescription)
+                            new KeyValuePair<string, string>("$tradeStationDescription", tradeStation.TradeStationDescription),
+                            new KeyValuePair<string, string>("$tradeStationMoney", tradeStation.TradeStationMoney.ToString())
                         });
                         if (_debugThisClass)
                         {
@@ -291,7 +301,7 @@ namespace Economy
         {
             using (new TimedBlock("Update multiple trade stations data in database", _debugThisClass))
             {
-                using (var basicSql = new BasicSql())
+                using (var basicSql = new BasicSql(true))
                 {
                     List<TradeStation> tradeStationsToAdd = new();
                     List<TradeStation> tradeStationsToUpdate = new();
@@ -327,23 +337,25 @@ namespace Economy
                         List<object[]> data = new List<object[]>();
                         foreach (var tradeStation in tradeStationsToAdd)
                         {
-                            data.Add(new object[] { tradeStation.FactionId, tradeStation.TradeStationName, tradeStation.TradeStationDescription });
+                            data.Add(new object[] { tradeStation.FactionId, tradeStation.TradeStationName, tradeStation.TradeStationDescription, tradeStation.TradeStationMoney });
                         }
                         var prams = new List<KeyValuePair<string, string>>();
                         var sql = @"
                         INSERT INTO	TradeStation
-                        (FactionId, TradeStationName, TradeStationDescription)
+                        (FactionId, TradeStationName, TradeStationDescription, TradeStationMoney)
                         VALUES";
                         var idx = 0;
                         foreach (var obj in data)
                         {
                             sql += idx > 0 ? "," : "";
-                            sql += $"($factionId{idx},$tradeStationName{idx},$tradeStationDescription{idx})";
+                            sql += $"($factionId{idx},$tradeStationName{idx},$tradeStationDescription{idx},$tradeStationMoney{idx})";
                             prams.Add(new KeyValuePair<string, string>($"$factionId{idx}", obj[0].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$tradeStationName{idx}", obj[1].ToString()));
                             prams.Add(new KeyValuePair<string, string>($"$tradeStationDescription{idx}", obj[2].ToString()));
+                            prams.Add(new KeyValuePair<string, string>($"$tradeStationMoney{idx}", obj[3].ToString()));
                             idx++;
                         }
+                        sql += "ON CONFLICT DO NOTHING";
                         basicSql.ExecuteNonReader(sql, prams);
 
                         //assign the newly added trade station its appropriate id
@@ -663,7 +675,7 @@ namespace Economy
                         {
                             new KeyValuePair<string, string>("$economyEventId", eEvent.EconomyEventId),
                             new KeyValuePair<string, string>("$economyEventName", eEvent.EconomyEventName),
-                            new KeyValuePair<string, string>("$econonyEventDescription", eEvent.EconomyEventDescription)
+                            new KeyValuePair<string, string>("$economyEventDescription", eEvent.EconomyEventDescription)
                         });
                         if (_debugThisClass)
                         {
@@ -673,7 +685,7 @@ namespace Economy
                 }
             }
         }
-        public static void UpdateEventData(List<EconomyEvent> events)
+        public static void UpdateEconomyEventData(List<EconomyEvent> events)
         {
             using (new TimedBlock("Update multiple events data in database", _debugThisClass))
             {
@@ -755,7 +767,7 @@ namespace Economy
                         {
                             basicSql.ExecuteNonReader(@"
                             UPDATE EconomyEvent
-                            SET EconomyEventName = $economyEventName, EventDescription = $economyEventDescription
+                            SET EconomyEventName = $economyEventName, EconomyEventDescription = $economyEventDescription
                             WHERE EconomyEventId = $economyEventId;
                             ", new List<KeyValuePair<string, string>>
                             {
@@ -798,11 +810,19 @@ namespace Economy
             }
             return default;
         }//untested
+        /*public static void UpdateObjectData<T>(DataObjectType dataType, object data) where T : class
+        {
+            if(dataType == DataObjectType.TradeStation)
+            {
+                UpdateTradeStationData(data);
+            }
+        }*/
         public static List<EconomyItem> LoadTradeStationInventory(string tradeStationId)
         {
             List<EconomyItem> inventory = new ();
             using (new TimedBlock("Loading trade station inventory", _debugThisClass))
             {
+                //var first = true;
                 using (var basicSql = new BasicSql())
                 {
                     var sql = @"
@@ -818,7 +838,16 @@ namespace Economy
                     },
                     (rowData) =>
                     {
+                        /*if (first)
+                        {
+                            for (var fieldNum = 0; fieldNum < rowData.FieldCount; fieldNum++)
+                            {
+                                var fieldName = rowData.GetName(fieldNum);
+                                //Debug.Log($"FIELD NAME :: {fieldName}");
+                            }
+                        }*/
                         var itemToAdd = new EconomyItem(rowData, DataObjectType.TradeStationInventoryItem);
+                        BasicSql.DebugRowData(rowData, _debugThisClass);
                         if (!inventory.Any(_ => _.EconomyItemId == itemToAdd.EconomyItemId))
                         {
                             inventory.Add(itemToAdd);
@@ -910,10 +939,11 @@ namespace Economy
                         }
                     });
                 }
-                foreach(var tradeStation in tradeStations)
-                {
-                    tradeStation.LoadInventory();
-                }
+            }
+            foreach (var tradeStation in tradeStations)
+            {
+                tradeStation.LoadInventory();
+                tradeStation.ReCalculatePriceDistribution();
             }
             return tradeStations;
         }

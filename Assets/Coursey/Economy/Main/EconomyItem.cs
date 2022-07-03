@@ -175,27 +175,48 @@ namespace Economy
         {
             if(dataObjectType == DataObjectType.EconomyItem)
             {
-                BasicSql.DebugRowData(rowData, _debugThisClass);
                 EconomyItemId = rowData["EconomyItemId"].ToString();
                 EconomyItemName = rowData["EconomyItemName"].ToString();
                 EconomyItemDescription = rowData["EconomyItemDescription"].ToString();
-                EconomyItemClass = Enum.Parse<ItemClass>(rowData["EconomyItemClassId"].ToString());
-                RarityInt = int.Parse(rowData["RarityInt"].ToString());
-                PriceDefault = int.Parse(rowData["PriceDefault"].ToString());
-                PriceFloor = int.Parse(rowData["PriceFloor"].ToString());
-                PriceRoof = int.Parse(rowData["PriceRoof"].ToString());
+                _economyItemClass = Enum.Parse<ItemClass>(rowData["EconomyItemClassId"].ToString());
+                _rarityInt = (int)Convert.ToInt64(rowData["RarityInt"].ToString());
+                _priceDefault = (int)Convert.ToInt64(rowData["PriceDefault"].ToString());
+                _priceFloor = (int)Convert.ToInt64(rowData["PriceFloor"].ToString());
+                _priceRoof = (int)Convert.ToInt64(rowData["PriceRoof"].ToString());
+                UpdatePublicVariables();
             }
             if (dataObjectType == DataObjectType.TradeStationInventoryItem)
             {
                 BasicSql.DebugRowData(rowData, _debugThisClass);
                 EconomyItemId = rowData["EconomyItemId"].ToString();
                 EconomyItemName = rowData["EconomyItemName"].ToString();
-                QuantityOfItem = int.Parse(rowData["QuantityOfItem"].ToString());
-                MaxQuantityOfItem = int.Parse(rowData["MaxQuantityOfItem"].ToString());
-                PurchasePrice = int.Parse(rowData["MaxQuantityOfItem"].ToString());
-                SalePrice = int.Parse(rowData["MaxQuantityOfItem"].ToString());
-                IsSpecialized = rowData["IsSpecialized"].ToString() ==" True";
+                EconomyItemDescription = rowData["EconomyItemDescription"].ToString();
+                _economyItemClass = Enum.Parse<ItemClass>(rowData["EconomyItemClassId"].ToString());
+                _maxQuantityOfItem = (int)Convert.ToInt64(rowData["MaxQuantityOfItem"]);
+                _quantityOfItem = (int)Convert.ToInt64(rowData["QuantityOfItem"]);
+                _purchasePrice = (int)Convert.ToInt64(rowData["PurchasePrice"]);
+                _salePrice = (int)Convert.ToInt64(rowData["SalePrice"]);
+                _rarityInt = (int)Convert.ToInt64(rowData["RarityInt"]);
+                _priceDefault = (int)Convert.ToInt64(rowData["PriceDefault"]);
+                _priceFloor = (int)Convert.ToInt64(rowData["PriceFloor"]);
+                _priceRoof = (int)Convert.ToInt64(rowData["PriceRoof"]);
+                IsSpecialized = rowData["IsSpecialized"].ToString() == "True" 
+                    || rowData["IsSpecialized"].ToString() == "true"
+                    || rowData["IsSpecialized"].ToString() == "0";
+                UpdatePublicVariables();
             }
+        }
+        public void UpdatePublicVariables()
+        {
+            PriceDefault = _priceDefault;
+            MaxQuantityOfItem = _maxQuantityOfItem;
+            QuantityOfItem = _quantityOfItem;
+            EconomyItemClass = _economyItemClass;
+            RarityInt = _rarityInt;
+            PriceRoof = _priceRoof;
+            PriceFloor = _priceFloor;
+            PurchasePrice = _purchasePrice;
+            SalePrice = _salePrice;
         }
     }
     public enum ItemClass

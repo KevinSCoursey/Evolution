@@ -8,7 +8,7 @@ namespace Economy
 {
     public static class NameRandomizer
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
         private static readonly List<string> vowelPairs = new();
         private static readonly List<string> vowels = new List<string> 
         {

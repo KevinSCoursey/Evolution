@@ -30,7 +30,7 @@ namespace Economy
         public static int NumTradeStationsPerDBBlock = 1000;
         public static bool LoadSettings()
         {
-            if (GameController.gameLoaded)
+            if (GameController.GameLoaded)
             {
                 return false;
             }
@@ -48,7 +48,7 @@ namespace Economy
         {
             var jsonManager = new JsonManager();
             var generalSettings = jsonManager.ReadConfig<GeneralConfig>();
-            GameController.seed = generalSettings.seed;
+            GameController.Seed = generalSettings.seed;
             MinutesGameWillRunFloat = generalSettings.MinutesGameWillRunFloat;
             NumTradeStationsPerDBBlock = generalSettings.NumTradeStationsPerDBBlock;
             RegenerateSQLiteDBsEachRun = generalSettings.RegenerateSQLiteDBsEachRun;

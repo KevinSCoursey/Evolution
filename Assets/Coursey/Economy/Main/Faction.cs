@@ -6,7 +6,7 @@ namespace Economy
 {
     public class Faction
     {
-        private const bool _debugThisClass = true;
+        private const bool _debugThisClass = false;
 
         public string FactionId;
         public string FactionName = string.Empty;
@@ -49,7 +49,7 @@ namespace Economy
             }
             return returnString;
         }
-        public void GenerateRandomTradeStation()
+        /*public void GenerateRandomTradeStation()
         {
             int rand = MathTools.PseudoRandomIntExclusiveMax(GameSettings.MinTradeStationsPerFaction, GameSettings.MaxTradeStationsPerFaction);
 
@@ -64,14 +64,6 @@ namespace Economy
 
                 using (var basicSql = new BasicSql())
                 {
-                    /*
-                    basicSql.ExecuteNonReader(@"
-                    INSERT INTO TradeStation (Id INTEGER, FactionId VARCHAR(3), Name VARCHAR(100), Description TEXT)
-                    VALUES ($id, $factionId, $name, $description)
-                    ON CONFLICT(Id) DO UPDATE SET
-                    Id = $id, FactionId = $factionId, Name = $name, Description = $description
-                    ",
-                     * */
                     basicSql.ExecuteNonReader(@"
                     UPDATE TradeStation
                     SET FactionId = $factionId, Name = $name, Description = $description
@@ -90,7 +82,7 @@ namespace Economy
 #pragma warning restore CS0162 // Unreachable code detected
 
             }
-        }
+        }*/
         public override string ToString()
         {
             return

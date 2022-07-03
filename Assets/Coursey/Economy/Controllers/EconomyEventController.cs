@@ -6,7 +6,7 @@ namespace Economy
 {
     public static class EconomyEventController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
 
         public static bool IsReady = false;
         public static List<EconomyEvent> economyEvents = new ();
@@ -35,7 +35,7 @@ namespace Economy
             IsReady = false;
             AddDefaultEconomyEvents();
             LogAllEconomyEvents();
-            DataBaseInteract.UpdateEventData(economyEvents);
+            DataBaseInteract.UpdateEconomyEventData(economyEvents);
             IsReady = true;
         }
         public static void AddDefaultEconomyEvents()

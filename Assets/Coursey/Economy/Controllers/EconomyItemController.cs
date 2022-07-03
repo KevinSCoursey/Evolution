@@ -6,9 +6,9 @@ namespace Economy
 {
     public static class EconomyItemController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
         public static bool IsReady = false;
-        public static List<EconomyItem> items = new List<EconomyItem>();
+        public static List<EconomyItem> Items = new List<EconomyItem>();
         public static void Initialize()//good
         {
             IsReady = false;
@@ -17,7 +17,7 @@ namespace Economy
                 AddDefaultEconomyItems();
                 DebugPurposeOnly_RandomlySpecializeItems();
                 LogAllEconomyItems();
-                DataBaseInteract.UpdateItemData(items);
+                DataBaseInteract.UpdateItemData(Items);
             }
             IsReady = true;
         }
@@ -34,7 +34,7 @@ namespace Economy
                 rarityInt: 3,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Gold Ore",
@@ -46,7 +46,7 @@ namespace Economy
                 rarityInt: 7,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Copper Ore",
@@ -58,7 +58,7 @@ namespace Economy
                 rarityInt: 4,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Nickel Ore",
@@ -70,7 +70,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Silver Ore",
@@ -82,7 +82,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Magnesium Ore",
@@ -94,7 +94,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Tin Ore",
@@ -106,7 +106,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Lead Ore",
@@ -118,7 +118,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Sulfur Ore",
@@ -130,7 +130,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Zinc Ore",
@@ -142,7 +142,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Potassium Ore",
@@ -154,7 +154,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Cobalt Ore",
@@ -166,7 +166,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Osmium Ore",
@@ -178,7 +178,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Tungsten Ore",
@@ -190,7 +190,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Silicon Ore",
@@ -202,7 +202,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-           items.Add(itemToAdd);
+           Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Bandage Pack",
@@ -214,7 +214,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Cyborg Mind Core",
@@ -226,7 +226,7 @@ namespace Economy
                 rarityInt: 10,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 1 placeholder",
@@ -238,7 +238,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 2 placeholder",
@@ -250,7 +250,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 3 placeholder",
@@ -262,7 +262,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 4 placeholder",
@@ -274,7 +274,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 5 placeholder",
@@ -286,7 +286,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 6 placeholder",
@@ -298,7 +298,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Generic random item 7 placeholder",
@@ -310,7 +310,7 @@ namespace Economy
                 rarityInt: 5,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
 
             itemToAdd = new EconomyItem(
                 name: "Deluxe Canned Space-Bugs (Spicy)",
@@ -322,14 +322,14 @@ namespace Economy
                 rarityInt: 1,
                 maxQuantityOfItem: 10000
                 );
-            items.Add(itemToAdd);
+            Items.Add(itemToAdd);
         }//good
         private static void LogAllEconomyItems()//good
         {
 #pragma warning disable CS0162 // Unreachable code detected
             if (_debugThisClass)
             {
-                foreach (var item in items)
+                foreach (var item in Items)
                 {
                     Debug.Log($"Added the following item to the economy...\n\n{item}");
                 }
@@ -340,12 +340,12 @@ namespace Economy
         {
             foreach(Faction faction in FactionController.Factions)
             {
-                int[] itemsToSpecialize = MathTools.GetRandomIndexes(items, MathTools.PseudoRandomIntExclusiveMax(3, items.Count / 2));
+                int[] itemsToSpecialize = MathTools.GetRandomIndexes(Items, MathTools.PseudoRandomIntExclusiveMax(3, Items.Count / 2));
                 for(int i = 0; i < itemsToSpecialize.Length; i++)
                 {
-                    if (!items[i].GetNamesOfFactionsThatSpecializeInThisItem().Contains(faction.FactionName))
+                    if (!Items[i].GetNamesOfFactionsThatSpecializeInThisItem().Contains(faction.FactionName))
                     {
-                        items[i].AddFactionSpecialization(faction);
+                        Items[i].AddFactionSpecialization(faction);
                     }
                 }
             }

@@ -9,7 +9,7 @@ namespace Economy
 {
     public static class FactionController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
         private static List<string> _factionNames = new List<string>
         {
             "Humans",
@@ -71,21 +71,33 @@ namespace Economy
         public static void GameLoop()
         {
             IsReady=false;
-            foreach(var faction in Factions)
+            List<TradeStation> tradeStations = new();
+            foreach (var faction in Factions)
             {
-                List<TradeStation> tradeStations = new();
-                tradeStations = DataBaseInteract.LoadTradeStationsForFaction(faction.FactionId);
+                using (new TimedBlock("ASDF :: LoadTradeStationsForFaction")) ;
+                    tradeStations = DataBaseInteract.LoadTradeStationsForFaction(faction.FactionId);//doesnt have inventory loaded here?
+#pragma warning disable CS0162 // Unreachable code detected
                 if (_debugThisClass)
                 {
-#pragma warning disable CS0162 // Unreachable code detected
                     foreach (var tradeStation in tradeStations)
                     {
-                        Debug.Log($"gamelooptradestationload {tradeStation}");
+                        Debug.Log($"Loading Trade Station for {faction.FactionName}...\n{tradeStation}");
                     }
-#pragma warning restore CS0162 // Unreachable code detected
                 }
+#pragma warning restore CS0162 // Unreachable code detected
+                if(tradeStations.Count >= GameSettings.NumTradeStationsPerDBBlock)
+                {
+                    TradeStationController.GameLoop(tradeStations);
+                    tradeStations.Clear();
+                }
+                
             }
-            IsReady=true;
+            if(tradeStations.Count != 0)
+            {
+                TradeStationController.GameLoop(tradeStations);
+                tradeStations.Clear();
+            }
+            IsReady =true;
 
 
 

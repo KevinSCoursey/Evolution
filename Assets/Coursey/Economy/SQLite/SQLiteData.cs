@@ -38,7 +38,7 @@ namespace Economy
     }
     public class BasicSql : IDisposable
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass =false;
         private string DataFilePath => System.IO.Path.Combine(SQLiteData.Path, SQLiteData.DataFileName);
         private static SqliteConnection _connection;
         private bool _disposedValue;
@@ -309,13 +309,13 @@ namespace Economy
         }
         public static void DebugRowData(SqliteDataReader rowData, bool debugThatClass)
         {
-            if (debugThatClass)
+            if (debugThatClass && _debugThisClass)
             {
                 var fieldCount = rowData.FieldCount;
                 string debug = "";
                 for (var currentFieldIdx = 0; currentFieldIdx < fieldCount; currentFieldIdx++)
                 {
-                    debug += $"{rowData.GetName(currentFieldIdx)} - {rowData[currentFieldIdx].ToString()}\n";
+                    debug += $"{rowData.GetFieldType(currentFieldIdx)} - {rowData.GetName(currentFieldIdx)} - {rowData[currentFieldIdx].ToString()}\n";
                 }
                 Debug.Log(debug);
             }

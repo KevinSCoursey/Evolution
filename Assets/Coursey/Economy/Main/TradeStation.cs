@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using UnityEngine;
+using System;
 
 namespace Economy
 {
     public class TradeStation
     {
-        private static bool _debugThisClass = false;
+        private static bool _debugThisClass = true;
 
         public string TradeStationName = string.Empty;
         public string TradeStationDescription = string.Empty;
         public List<EconomyEvent> EconomyEvents = new();
-        public int money = 100000;
+        public int TradeStationMoney = 0;
         public Faction AssociatedFaction;
         public string FactionId;
         public string TradeStationId;
@@ -24,10 +25,11 @@ namespace Economy
 
         public TradeStation(Faction associatedFaction, string tradeStationName = "Unnamed station", string tradeStationDescription = "No description provided.")
         {
-            this.AssociatedFaction = associatedFaction;
-            this.TradeStationName = tradeStationName;
-            this.TradeStationDescription = tradeStationDescription;
+            AssociatedFaction = associatedFaction;
+            TradeStationName = tradeStationName;
+            TradeStationDescription = tradeStationDescription;
             FactionId = associatedFaction.FactionId;
+            TradeStationMoney = MathTools.PseudoRandomIntExclusiveMax(GameSettings.AverageMoneyHeldPerTradeStation / 10, GameSettings.AverageMoneyHeldPerTradeStation * 2);
         }
         public void Initialize()
         {
@@ -39,6 +41,7 @@ namespace Economy
             FactionId = rowData["FactionId"].ToString();
             TradeStationName = rowData["TradeStationName"].ToString();
             TradeStationDescription = rowData["TradeStationDescription"].ToString();
+            TradeStationMoney = (int)Convert.ToInt32(rowData["TradeStationMoney"].ToString());
         }
         private void GenerateNewInventory(bool replaceExisting = false)
         {
@@ -83,6 +86,7 @@ namespace Economy
             using (new TimedBlock($"Loading inventory data for {TradeStationName}", _debugThisClass))
             {
                 InventoryItems = DataBaseInteract.LoadTradeStationInventory(TradeStationId);
+                ReCalculatePriceDistribution();
             }
         }
         public void ReCalculateItemDistribution()
@@ -96,7 +100,6 @@ namespace Economy
         }
         public void ReCalculatePriceDistribution()
         {
-            if(InventoryItems.Count == 0) LoadInventory();
             foreach (EconomyItem item in InventoryItems)
             {
                 item.PurchasePrice = MathTools.CalculateItemPurchasePrice(item, item.FactionsThatSpecializeInThisItem.Contains(AssociatedFaction));
@@ -243,12 +246,12 @@ namespace Economy
                 ? (int)(referenceTo_fromTradeStation_economyItem.PurchasePrice * (1f - GameSettings.SameFactionPriceDiscount * 0.01f) * numItemsExchanged)
                 : (int)(referenceTo_fromTradeStation_economyItem.PurchasePrice * (1f + GameSettings.PercentTaxExternalTrades * 0.01f) * numItemsExchanged);
             Debug.Log($"Cost: ${cost}");
-            if (money - cost > 0 && AI_PurchaseValid)
+            if (TradeStationMoney - cost > 0 && AI_PurchaseValid)
             {
                 referenceTo_fromTradeStation_economyItem.QuantityOfItem -= numItemsExchanged;
                 referenceTo_ownTradeStation_economyItem.QuantityOfItem += numItemsExchanged;
-                fromTradeStation.money += cost;
-                money -= cost;
+                fromTradeStation.TradeStationMoney += cost;
+                TradeStationMoney -= cost;
                 Debug.Log($"Faction {AssociatedFaction.FactionName}'s Trade Station {TradeStationName} has bought {economyItem.EconomyItemName} x{numItemsExchanged} for ${cost} from the " +
                 $"{fromTradeStation.AssociatedFaction.FactionName} Faction's {fromTradeStation.TradeStationName} Trade Station. " +
                 $"{TradeStationName} now has x{referenceTo_ownTradeStation_economyItem.QuantityOfItem} and {fromTradeStation.TradeStationName} " +
@@ -281,7 +284,7 @@ namespace Economy
                 $"Trade Station Id: {TradeStationId}\n" +
                 $"Station name: {TradeStationName}\n" +
                 $"Station description: {TradeStationDescription}\n" +
-                $"Money: ${money}\n" +
+                $"Money: ${TradeStationMoney}\n" +
                 $"Items available:{LogItemsAvailable()}";
         }
     }

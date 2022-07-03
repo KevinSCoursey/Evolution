@@ -57,12 +57,12 @@ namespace Economy
             EconomyEventName = name;
             EconomyEventDescription = description;
             ItemClassesEffectedByEvent = itemClassesImpactedByEvent;
-            this.ItemEffectFactor = factor;
+            ItemEffectFactor = factor;
         }
         public EconomyEvent(SqliteDataReader rowData)
         {
-            EconomyEventName = rowData["EventName"].ToString();
-            EconomyEventDescription = rowData["EventDescription"].ToString();
+            EconomyEventName = rowData["EconomyEventName"].ToString();
+            EconomyEventDescription = rowData["EconomyEventDescription"].ToString();
         }
         public int TriggerEvent(Faction faction)
         {

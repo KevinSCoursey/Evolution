@@ -8,7 +8,7 @@ namespace Economy
 {
     public class TradeRoute
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
         public (TradeStation, TradeStation) Trade;
         public bool TradeRouteValid = true;
         public bool InternalTradeRoute;

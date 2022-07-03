@@ -8,7 +8,7 @@ namespace Economy
 {
     public static class TradeStationController
     {
-        private const bool _debugThisClass = false;
+        private const bool _debugThisClass = true;
         public static bool IsReady = false;
         public static void Initialize()
         {
@@ -18,6 +18,19 @@ namespace Economy
             }
             IsReady = true;
         }//good
+        public static void GameLoop(List<TradeStation> tradeStations)
+        {
+            foreach (var tradeStation in tradeStations)
+            {
+                tradeStation.UseItems();
+                tradeStation.ProduceItems();
+                //tradeStation.ExecuteAllTrades();
+                tradeStation.ReCalculatePriceDistribution();
+                Debug.Log($"{tradeStation}");
+            }
+            DataBaseInteract.UpdateTradeStationData(tradeStations);
+            DataBaseInteract.UpdateTradeStationInventoryData(tradeStations);
+        }
         private static void GenerateRandomTradeStations()
         {
             //build trade stations and add to database if they dont exist
