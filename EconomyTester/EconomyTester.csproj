@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\EconomyController.cs" Link="Evolution\Economy\Controllers\EconomyController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\EconomyEventController.cs" Link="Evolution\Economy\Controllers\EconomyEventController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\EconomyItemController.cs" Link="Evolution\Economy\Controllers\EconomyItemController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\FactionController.cs" Link="Evolution\Economy\Controllers\FactionController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\GameController.cs" Link="Evolution\Economy\Controllers\GameController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Controllers\TradeStationController.cs" Link="Evolution\Economy\Controllers\TradeStationController.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Main\EconomyEvent.cs" Link="Evolution\Economy\Main\EconomyEvent.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Main\EconomyItem.cs" Link="Evolution\Economy\Main\EconomyItem.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Main\Faction.cs" Link="Evolution\Economy\Main\Faction.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Main\TradeRoute.cs" Link="Evolution\Economy\Main\TradeRoute.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Main\TradeStation.cs" Link="Evolution\Economy\Main\TradeStation.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Settings\DataTransferObjects.cs" Link="Evolution\Economy\Settings\DataTransferObjects.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Settings\GameSettings.cs" Link="Evolution\Economy\Settings\GameSettings.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Settings\JsonManager.cs" Link="Evolution\Economy\Settings\JsonManager.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\SQLite\DataBaseInteract.cs" Link="Evolution\Economy\SQLite\DataBaseInteract.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\SQLite\SQLiteData.cs" Link="Evolution\Economy\SQLite\SQLiteData.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Tools\GameTime.cs" Link="Evolution\Economy\Tools\GameTime.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Tools\MathTools.cs" Link="Evolution\Economy\Tools\MathTools.cs" />
+    <Compile Include="..\Assets\Coursey\Economy\Tools\NameRandomizer.cs" Link="Evolution\Economy\Tools\NameRandomizer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Evolution\Economy\Controllers\" />
+    <Folder Include="Evolution\Economy\Main\" />
+    <Folder Include="Evolution\Economy\Tools\" />
+    <Folder Include="Evolution\Economy\SQLite\" />
+    <Folder Include="Evolution\Economy\Settings\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Assets\Plugins\sqlite3.dll" Link="sqlite3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Mono.Data.Sqlite">
+      <HintPath>..\Assets\Plugins\Mono.Data.Sqlite.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
