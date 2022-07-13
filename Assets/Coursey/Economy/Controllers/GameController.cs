@@ -63,7 +63,7 @@ namespace Economy
             {
                 if (GameTickReady())
                 {
-                    using (new TimedBlock("Master game loop (one tick)", _debugThisClass))
+                    using (new TimedBlock2("Master game loop (one tick)", _debugThisClass))
                     {
                         if (TickCounter >= GameSettings.TicksPerSecond)
                         {
@@ -88,6 +88,10 @@ namespace Economy
                         if (GameTime.GetSecondsRunning() >= (60f * GameSettings.MinutesGameWillRunFloat))
                         {
                             GameRunning = false;
+                            using (var basicSql = new BasicSql())
+                            {
+                                basicSql.CloseConnection();
+                            }
                             StopGame();
                         }
                     }

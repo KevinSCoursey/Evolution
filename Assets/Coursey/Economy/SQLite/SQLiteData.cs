@@ -56,6 +56,10 @@ namespace Economy
                 OpenConnection();
             }
         }
+        public void CloseConnection()
+        {
+            _connection.Close();
+        }
         public void BeginTransaction()
         {
             if (!UseTransaction)
@@ -321,7 +325,7 @@ namespace Economy
                 {
                     if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
                     {
-                        _connection.Close();
+                        //_connection.Close();
                     }
                 }
                 _disposedValue = true;
