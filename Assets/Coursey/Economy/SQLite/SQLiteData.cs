@@ -12,7 +12,6 @@ namespace Economy
         public static string DataFileName = "data.db";
         public static string DataSubDirectory = "data";
         public static string Path;
-        public TextAsset CreateDatabaseScript;
 
         public static void Initialize()
         {
@@ -297,14 +296,6 @@ namespace Economy
                 {
                     Debug.LogException(ex);
                 }
-            }
-        }
-        public void RunScript(TextAsset textAsset)
-        {
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = textAsset.text;
-                cmd.ExecuteNonQuery();
             }
         }
         public static void DebugRowData(SqliteDataReader rowData, bool debugThatClass)
