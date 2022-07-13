@@ -65,7 +65,6 @@ Thumbs.db
 ExportedObj/
 .consulo/
 *.suo
-*.csproj
 *.unityproj
 *.tmp
 *.user
