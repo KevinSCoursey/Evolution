@@ -12,7 +12,6 @@ namespace Economy
         public static string DataFileName = "data.db";
         public static string DataSubDirectory = "data";
         public static string Path;
-        public TextAsset CreateDatabaseScript;
 
         public static void Initialize()
         {
@@ -56,6 +55,10 @@ namespace Economy
             {
                 OpenConnection();
             }
+        }
+        public void CloseConnection()
+        {
+            _connection.Close();
         }
         public void BeginTransaction()
         {
@@ -299,14 +302,6 @@ namespace Economy
                 }
             }
         }
-        public void RunScript(TextAsset textAsset)
-        {
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = textAsset.text;
-                cmd.ExecuteNonQuery();
-            }
-        }
         public static void DebugRowData(SqliteDataReader rowData, bool debugThatClass)
         {
             if (debugThatClass && _debugThisClass)
@@ -330,7 +325,7 @@ namespace Economy
                 {
                     if (_connection != null && _connection.State != System.Data.ConnectionState.Closed)
                     {
-                        _connection.Close();
+                        //_connection.Close();
                     }
                 }
                 _disposedValue = true;
